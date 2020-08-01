@@ -1,14 +1,14 @@
 ### Geocoding from imprecise addresses
 
-There are two main scripts in this repository. The [addresses_to_clouds.py](https://github.com/pvanheus/wc_geocoder/blob/master/addresses_to_clouds.py)
+There are two main scripts in this repository. The [addresses_to_clouds.py](addresses_to_clouds.py)
 script builds "wordclouds" from a test set of addresses. These try and associate keywords with postal codes and thus locations (drawn from the AfriGIS data file).
 In addition to the input file of addresses it relies on [AfriGIS_Suburbs_Towns_List.csv](https://github.com/pvanheus/wc_geocoder/blob/master/AfriGIS_Suburbs_Towns_List.csv) (a tab-separated file,
-despite being called .csv), [all_suburbs_words.txt](https://github.com/pvanheus/wc_geocoder/blob/master/all_suburbs_words.txt) and 
-[street_types.txt](https://github.com/pvanheus/wc_geocoder/blob/master/street_types.txt), all have to be in the same directory of the script.
+despite being called .csv), [all_suburbs_words.txt](all_suburbs_words.txt) and 
+[street_types.txt](street_types.txt), all have to be in the same directory of the script.
 
-The output is a file [data.json](https://github.com/pvanheus/wc_geocoder/blob/master/data.json).
+The output is a file [data.json](data.json).
 
-The second script, [assign_geocode_to_address.py](https://github.com/pvanheus/wc_geocoder/blob/master/assign_geocode_to_address.py), takes input in a tab seperated file,
+The second script, [assign_geocode_to_address.py](assign_geocode_to_address.py), takes input in a tab seperated file,
 with at least the columns `address_row_id`, `AddressLine1`, `AddressLine2`, `AddressLine3`, `AddressLine4` and `postal_code` (column names must be in the first row of the file).
 It extracts the address and using the files from the addresses_to_clouds.py script tries to associated the address with a AfriGIS suburb. The output is a copy
 of the input with new columns added showing the predicted suburb and city/town, the method used to make the decision, and some diagnostic data.
