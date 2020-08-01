@@ -1,0 +1,63 @@
+ RD
+Way
+Weg
+cres
+ ave
+ AVE
+drive
+ rd
+plaas
+ str 
+Straat
+Street
+ STREET
+ Str
+Road
+ Ave
+Avenue
+Circle
+Close
+Place
+Crescent
+Boulevard
+Walk
+Bypass
+Laan
+Lane
+Dam
+Dell
+Deurpad
+End
+Estate
+Extension
+Freeway
+Highway
+Loop
+Parkway
+Parkweg
+Pass
+Path
+Plein
+Plek
+Rise
+Route
+Row
+Rylaan
+Singel
+Sirkel
+Slot
+Snelweg
+Stairs
+Steeg
+Steps
+Terrace
+Terras
+Trail
+Trappe
+Turn
+Verbypad
+View
+Voetpad
+Wandelhal
+Wandelpad
+Alley
