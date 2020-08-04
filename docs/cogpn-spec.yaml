@@ -17,6 +17,8 @@ servers:
    description: integration testing server
  - url: "https://cogpn.capetown.gov.za"
    description: prod server
+security:
+  - basicAuth: []
 paths:
   /v1/scrub:
     get:
@@ -36,6 +38,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScrubResults'
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         default:
           description: unexpected error
           content:
@@ -60,6 +64,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeocodeResults'
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         default:
           description: unexpected error
           content:
@@ -90,6 +96,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeolookupResults'
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Either the spatial identifier or spatial dataset don't exist.
           content:
@@ -215,4 +223,15 @@ components:
             type: integer
             format: int32
           message:
+            type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
             type: string
