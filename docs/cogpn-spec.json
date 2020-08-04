@@ -1,0 +1,359 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cape of Good Place Names Service",
+    "description": "This is a stateless service for performing various geotranslation operations, moving between how people describe places and codified coordinate systems.",
+    "contact": {
+      "name": "City of Cape Town Data Science Unit",
+      "url": "https://github.com/cityofcapetown/cape-of-good-place-names",
+      "email": "opmdata+cogpn-support@capetown.gov.za"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://raw.githubusercontent.com/cityofcapetown/cape-of-good-place-names/master/LICENSE"
+    },
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "local dev server"
+    },
+    {
+      "url": "https://cogpn-beta.capetown.gov.za",
+      "description": "integration testing server"
+    },
+    {
+      "url": "https://cogpn.capetown.gov.za",
+      "description": "prod server"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/scrub": {
+      "get": {
+        "summary": "Extract meaningful phrases or identifiers from free form addresses",
+        "operationId": "scrub",
+        "parameters": [
+          {
+            "name": "address",
+            "description": "Free form address string",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of scrubbed results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrubResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/geocode": {
+      "get": {
+        "summary": "Translate a free form address into a spatial coordinate",
+        "operationId": "geocode",
+        "parameters": [
+          {
+            "name": "address",
+            "description": "Free form address string to geocode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of geocoded results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeocodeResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/boundaryLookup": {
+      "get": {
+        "summary": "Translate a spatial identifier into a description of space",
+        "operationId": "geolookup",
+        "parameters": [
+          {
+            "name": "spatialId",
+            "description": "spatial identifier to look up in spatial dataset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "spatialDatasetId",
+            "description": "dataset from which to look up spatial identifier",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of geolookup results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeolookupResults"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Either the spatial identifier or spatial dataset don't exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ScrubResult": {
+        "type": "object",
+        "required": [
+          "scrubberId",
+          "scrubbedValue",
+          "confidence"
+        ],
+        "properties": {
+          "scrubberId": {
+            "type": "string",
+            "description": "Identifier for the scrubber"
+          },
+          "scrubbedValue": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "ScrubResults": {
+        "type": "object",
+        "required": [
+          "id",
+          "timestamp",
+          "results"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID describing the transaction"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server time of the transaction"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScrubResult"
+            },
+            "description": "Array of Scrub results"
+          }
+        }
+      },
+      "GeocodeResult": {
+        "type": "object",
+        "required": [
+          "geocoderId",
+          "geocodedValue",
+          "confidence"
+        ],
+        "properties": {
+          "geocoderId": {
+            "type": "string",
+            "description": "Identifier for the geocoder"
+          },
+          "geocodedValue": {
+            "type": "object",
+            "description": "Resulting GeoJSON string from the GeoCoder"
+          },
+          "confidence": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "GeocodeResults": {
+        "type": "object",
+        "required": [
+          "id",
+          "timestamp",
+          "results"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID describing the transaction"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server time of the transaction"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeocodeResult"
+            },
+            "description": "Array of Geocoding results"
+          }
+        }
+      },
+      "GeolookupResult": {
+        "type": "object",
+        "required": [
+          "geolookupId",
+          "geocodedValue"
+        ],
+        "properties": {
+          "geolookupId": {
+            "type": "string",
+            "description": "Identifier for the geospatial entity"
+          },
+          "geolookupValue": {
+            "type": "object",
+            "description": "Resulting GeoJSON string from the lookup"
+          }
+        }
+      },
+      "GeolookupResults": {
+        "type": "object",
+        "required": [
+          "id",
+          "timestamp",
+          "results"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID describing the transaction"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server time of the transaction"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeolookupResult"
+            },
+            "description": "Array of Geolookup results"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Authentication information is missing or invalid",
+        "headers": {
+          "WWW_Authenticate": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
