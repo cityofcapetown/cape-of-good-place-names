@@ -1,4 +1,5 @@
 import connexion
+from flask import current_app
 import six
 
 from cape_of_good_place_names.models.error import Error  # noqa: E501
@@ -16,4 +17,13 @@ def scrub(address):  # noqa: E501
 
     :rtype: ScrubResults
     """
-    return 'do some magic!'
+    request_id = util.get_request_uuid()
+    request_timestamp = util.get_timestamp()
+
+    response = ScrubResults(
+        id=request_id,
+        timestamp=request_timestamp,
+        results=[]
+    )
+
+    return response

@@ -19,7 +19,7 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": f"Basic {credentials}"}
 
     def test_geolookup(self):
-        """Test case for geolookup
+        """Vanilla test case for geolookup
 
         Translate a spatial identifier into a description of space
         """
@@ -33,6 +33,11 @@ class TestDefaultController(BaseTestCase):
         )
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        # Asserting that we get back the results we expect
+        data_dict = json.loads(response.data)
+        self.assertIn("results", data_dict)
+        self.assertListEqual(data_dict["results"], [], "Boundary lookup results list is not empty!")
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": f"Basic {credentials}"}
 
     def test_geocode(self):
-        """Test case for geocode
+        """Vanilla test case for geocode
 
         Translate a free form address into a spatial coordinate
         """
@@ -32,6 +32,11 @@ class TestDefaultController(BaseTestCase):
         )
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        # Asserting that we get back the results we expect
+        data_dict = json.loads(response.data)
+        self.assertIn("results", data_dict)
+        self.assertListEqual(data_dict["results"], [], "Geocoder results list is not empty!")
 
 
 if __name__ == '__main__':

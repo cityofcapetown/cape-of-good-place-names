@@ -19,10 +19,11 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": f"Basic {credentials}"}
 
     def test_scrub(self):
-        """Test case for scrub
+        """Vanilla test case for scrub
 
         Extract meaningful phrases or identifiers from free form addresses
         """
+        # Asserting that we at least get a 200 back
         query_string = [('address', 'address_example')]
         response = self.client.open(
             '/v1/scrub',
@@ -31,6 +32,11 @@ class TestDefaultController(BaseTestCase):
             headers=self.authorisation_headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        # Asserting that we get back the results we expect
+        data_dict = json.loads(response.data)
+        self.assertIn("results", data_dict)
+        self.assertListEqual(data_dict["results"], [], "Scrubber results list is not empty!")
 
 
 if __name__ == '__main__':
