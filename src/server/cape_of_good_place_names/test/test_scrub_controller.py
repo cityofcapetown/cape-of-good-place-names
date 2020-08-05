@@ -16,7 +16,7 @@ class TestDefaultController(BaseTestCase):
 
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
-        self.authorisation_headers = {"Authorization": f"Basic {credentials}"}
+        self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
     def test_scrub(self):
         """Vanilla test case for scrub
