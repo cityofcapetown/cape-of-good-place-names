@@ -1,5 +1,7 @@
 import datetime
 
+from flask import current_app, request, has_request_context
+import pytz
 import six
 import typing
 
@@ -139,3 +141,16 @@ def _deserialize_dict(data, boxed_type):
     """
     return {k: _deserialize(v, boxed_type)
             for k, v in six.iteritems(data)}
+
+
+def get_request_uuid():
+    request_id = 'NA'
+    if has_request_context():
+        request_id = request.environ.get("HTTP_X_REQUEST_ID")
+
+    return request_id
+
+
+def get_timestamp():
+    tz = pytz.timezone(current_app.config["TIMEZONE"])
+    return datetime.datetime.now(tz=tz)
