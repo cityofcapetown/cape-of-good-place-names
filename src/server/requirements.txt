@@ -3,3 +3,4 @@ python_dateutil == 2.6.0
 setuptools >= 21.0.0
 pytz == 2020.1
 flask-request-id-header == 0.1.1
+Workzeug == 0.16.1
