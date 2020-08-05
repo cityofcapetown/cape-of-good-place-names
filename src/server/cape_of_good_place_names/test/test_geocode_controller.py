@@ -8,7 +8,7 @@ from six import BytesIO
 
 from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geocode_results import GeocodeResults  # noqa: E501
-from cape_of_good_place_names.test import BaseTestCase
+from cape_of_good_place_names.test import BaseTestCase, MockGeocoder
 
 
 class TestDefaultController(BaseTestCase):
@@ -36,7 +36,18 @@ class TestDefaultController(BaseTestCase):
         # Asserting that we get back the results we expect
         data_dict = json.loads(response.data)
         self.assertIn("results", data_dict)
-        self.assertListEqual(data_dict["results"], [], "Geocoder results list is not empty!")
+        results = data_dict["results"]
+        self.assertEqual(len(data_dict["results"]), 1, "Geocoder is not returning the expected number of test results")
+
+        # Inspecting the result itself
+        result, *_ = results
+        self.assertEqual(result["geocoder_id"], MockGeocoder.__name__, "Geocode ID not mapped through correctly")
+        self.assertEqual(result["confidence"], 1, "Geocoder confidence not mapped through correctly")
+        self.assertEqual(
+            result["geocoded_value"],
+            '{"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"address": "address_example"}, "type": "Feature"}',
+            "Geocoded value not mapped through correctly"
+        )
 
 
 if __name__ == '__main__':

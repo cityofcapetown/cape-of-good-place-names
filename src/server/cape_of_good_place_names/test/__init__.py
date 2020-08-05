@@ -1,9 +1,15 @@
 import logging
 
 import connexion
+from geocode_array.Geocoder import Geocoder
 from flask_testing import TestCase
 
 from cape_of_good_place_names.encoder import JSONEncoder
+
+
+class MockGeocoder(Geocoder):
+    def geocode(self, address_string, *extra_args) -> (float, float) or None:
+        return address_string, 0.0, 0.0, None
 
 
 class BaseTestCase(TestCase):
@@ -15,5 +21,6 @@ class BaseTestCase(TestCase):
         app.add_api('swagger.yaml')
 
         app.app.config["TIMEZONE"] = "Africa/Johannesburg"
+        app.app.config["GEOCODERS"] = [MockGeocoder]
 
         return app.app
