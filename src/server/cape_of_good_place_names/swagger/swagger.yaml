@@ -55,7 +55,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-openapi-router-controller: cape_of_good_place_names.controllers.default_controller
+      x-openapi-router-controller: cape_of_good_place_names.controllers.scrub_controller
   /v1/geocode:
     get:
       summary: Translate a free form address into a spatial coordinate
@@ -90,7 +90,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-openapi-router-controller: cape_of_good_place_names.controllers.default_controller
+      x-openapi-router-controller: cape_of_good_place_names.controllers.geocode_controller
   /v1/boundary_lookup:
     get:
       summary: Translate a spatial identifier into a description of space
@@ -139,7 +139,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      x-openapi-router-controller: cape_of_good_place_names.controllers.default_controller
+      x-openapi-router-controller: cape_of_good_place_names.controllers.geolookup_controller
 components:
   schemas:
     ScrubResult:
