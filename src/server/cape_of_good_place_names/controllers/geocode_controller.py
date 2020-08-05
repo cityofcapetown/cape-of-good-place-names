@@ -24,10 +24,12 @@ def geocode(address):  # noqa: E501
     :rtype: GeocodeResults
     """
     request_timestamp = util.get_timestamp()
+    current_app.logger.info("Geocod[ing]...")
+    current_app.logger.debug("address='{}'".format(address))
 
     # Actually doing the geocoding
     geocoders = [gc() for gc in current_app.config["GEOCODERS"]]
-    geocoder_results = (
+    geocoder_results = [
         (
             {
                 "type": "Feature",
@@ -42,7 +44,8 @@ def geocode(address):  # noqa: E501
             else None
         )
         for result in geocode_array.threaded_geocode(geocoders, address)
-    )
+    ]
+    current_app.logger.debug("geocoder_results=\n'{}'".format(pprint.pformat(geocoder_results)))
 
     response_results = [
         GeocodeResult(geocoder.__class__.__name__, json.dumps(geocoder_result), 1 if geocoder_result else 0)
@@ -54,5 +57,6 @@ def geocode(address):  # noqa: E501
         timestamp=request_timestamp,
         results=response_results
     )
+    current_app.logger.info("...Geocod[ed]".format(address))
 
     return response
