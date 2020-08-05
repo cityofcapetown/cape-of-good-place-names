@@ -72,18 +72,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /v1/boundaryLookup:
+  /v1/boundary_lookup:
     get:
       summary: "Translate a spatial identifier into a description of space"
       operationId: geolookup
       parameters: 
-       - name: spatialId
+       - name: spatial_id
          description: "spatial identifier to look up in spatial dataset"
          in: query
          required: false
          schema:
           type: string
-       - name: spatialDatasetId
+       - name: spatial_dataset_id
          description: "dataset from which to look up spatial identifier"
          in: query
          required: true
@@ -116,14 +116,14 @@ components:
       ScrubResult:
         type: object
         required:
-         - scrubberId
-         - scrubbedValue
+         - scrubber_id
+         - scrubbed_value
          - confidence
         properties:
-          scrubberId:
+          scrubber_id:
             type: string
             description: "Identifier for the scrubber"
-          scrubbedValue:
+          scrubbed_value:
             type: string
           confidence:
             type: number
@@ -150,15 +150,15 @@ components:
       GeocodeResult:
         type: object
         required:
-         - geocoderId
-         - geocodedValue
+         - geocoder_id
+         - geocoded_value
          - confidence
         properties:
-          geocoderId:
+          geocoder_id:
             type: string
             description: "Identifier for the geocoder"
-          geocodedValue:
-            type: object
+          geocoded_value:
+            type: object 
             description: "Resulting GeoJSON string from the GeoCoder"
           confidence:
             type: number
@@ -185,13 +185,13 @@ components:
       GeolookupResult:
         type: object
         required:
-         - geolookupId
-         - geocodedValue
+         - geolookup_id
+         - geolookup_value
         properties:
-          geolookupId:
+          geolookup_id:
             type: string
             description: "Identifier for the geospatial entity"
-          geolookupValue:
+          geolookup_value:
             type: object
             description: "Resulting GeoJSON string from the lookup"
       GeolookupResults:
