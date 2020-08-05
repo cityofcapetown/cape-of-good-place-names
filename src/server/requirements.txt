@@ -4,3 +4,4 @@ setuptools >= 21.0.0
 pytz == 2020.1
 flask-request-id-header == 0.1.1
 Werkzeug == 0.16.1
+git+git://github.com/opendatadurban/geocode-array.git@b9b91dbe853598b5e48b31512ca34cef80230b1c#egg=geocode-array
