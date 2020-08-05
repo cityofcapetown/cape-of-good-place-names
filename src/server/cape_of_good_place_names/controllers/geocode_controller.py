@@ -1,3 +1,6 @@
+import logging
+import pprint
+
 import connexion
 import six
 
@@ -16,4 +19,13 @@ def geocode(address):  # noqa: E501
 
     :rtype: GeocodeResults
     """
-    return 'do some magic!'
+    request_id = util.get_request_uuid()
+    request_timestamp = util.get_timestamp()
+
+    response = GeocodeResults(
+        id=request_id,
+        timestamp=request_timestamp,
+        results=[]
+    )
+
+    return response

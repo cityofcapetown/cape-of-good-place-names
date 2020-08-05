@@ -18,4 +18,13 @@ def geolookup(spatial_dataset_id, spatial_id=None):  # noqa: E501
 
     :rtype: GeolookupResults
     """
-    return 'do some magic!'
+    request_id = util.get_request_uuid()
+    request_timestamp = util.get_timestamp()
+
+    response = GeolookupResults(
+        id=request_id,
+        timestamp=request_timestamp,
+        results=[]
+    )
+
+    return response
