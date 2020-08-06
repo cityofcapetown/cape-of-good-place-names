@@ -32,13 +32,16 @@ def geocode(address):  # noqa: E501
     geocoder_results = [
         (
             {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [result[1], result[2]]
-                },
-                "properties": {
-                    "address": result[0]
+                "type": "FeatureCollection",
+                "features": {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [result[1], result[2]]
+                    },
+                    "properties": {
+                        "address": result[0]
+                    }
                 }
             } if result[1] is not None
             else None

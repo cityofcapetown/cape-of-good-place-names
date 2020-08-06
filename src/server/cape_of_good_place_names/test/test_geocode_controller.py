@@ -45,7 +45,7 @@ class TestDefaultController(BaseTestCase):
         self.assertEqual(result["confidence"], 1, "Geocoder confidence not mapped through correctly")
         self.assertEqual(
             result["geocoded_value"],
-            '{"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"address": "address_example"}, "type": "Feature"}',
+            '{"features": {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"address": "address_example"}, "type": "Feature"}, "type": "FeatureCollection"}',
             "Geocoded value not mapped through correctly"
         )
 
