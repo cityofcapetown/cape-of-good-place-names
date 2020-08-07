@@ -21,6 +21,5 @@ class BaseTestCase(TestCase):
         app.add_api('swagger.yaml')
 
         app.app.config["TIMEZONE"] = "Africa/Johannesburg"
-        app.app.config["GEOCODERS"] = [MockGeocoder]
 
         return app.app

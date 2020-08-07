@@ -18,6 +18,8 @@ class TestDefaultController(BaseTestCase):
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
+        current_app.config["GEOCODERS"] = [MockGeocoder]
+
     def test_geocode(self):
         """Vanilla test case for geocode
 
