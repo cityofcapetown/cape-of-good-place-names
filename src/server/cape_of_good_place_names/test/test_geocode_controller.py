@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import base64
 
-from flask import json
+from flask import json, current_app
 from six import BytesIO
 
 from cape_of_good_place_names.models.error import Error  # noqa: E501
@@ -17,6 +17,8 @@ class TestDefaultController(BaseTestCase):
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
+
+        current_app.config["GEOCODERS"] = [MockGeocoder]
 
     def test_geocode(self):
         """Vanilla test case for geocode
@@ -43,9 +45,13 @@ class TestDefaultController(BaseTestCase):
         result, *_ = results
         self.assertEqual(result["geocoder_id"], MockGeocoder.__name__, "Geocode ID not mapped through correctly")
         self.assertEqual(result["confidence"], 1, "Geocoder confidence not mapped through correctly")
-        self.assertEqual(
-            result["geocoded_value"],
-            '{"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"address": "address_example"}, "type": "Feature"}',
+        result_dict = json.loads(result["geocoded_value"])
+        self.assertDictEqual(
+            result_dict,
+            {"features": [
+                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                 "properties": {"address": "address_example"}, "type": "Feature"}],
+             "type": "FeatureCollection"},
             "Geocoded value not mapped through correctly"
         )
 
