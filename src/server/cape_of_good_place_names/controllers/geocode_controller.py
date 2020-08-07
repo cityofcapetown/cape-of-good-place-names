@@ -33,7 +33,7 @@ def geocode(address):  # noqa: E501
         (
             {
                 "type": "FeatureCollection",
-                "features": {
+                "features": [{
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
@@ -42,7 +42,7 @@ def geocode(address):  # noqa: E501
                     "properties": {
                         "address": result[0]
                     }
-                }
+                }]
             } if result[1] is not None
             else None
         )

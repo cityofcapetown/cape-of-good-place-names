@@ -73,9 +73,13 @@ class TestDefaultController(BaseTestCase):
         # Inspecting the result itself
         result, *_ = results
         self.assertEqual(result["geolookup_id"], "centre_of_the_world", "Spatial ID not mapped through correctly")
+        result_dict = json.loads(result["geolookup_value"])
         self.assertEqual(
-            result["geolookup_value"],
-            '{"features": [{"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"temp_id": "centre_of_the_world"}, "type": "Feature"}], "type": "FeatureCollection"}',
+            result_dict,
+            {"features": [
+                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                 "properties": {"temp_id": "centre_of_the_world"}, "type": "Feature"}],
+             "type": "FeatureCollection"},
             "Geolookedup value not mapped through correctly"
         )
 
@@ -105,9 +109,13 @@ class TestDefaultController(BaseTestCase):
         # Inspecting the result itself
         result, *_ = results
         self.assertEqual(result["geolookup_id"], "temp_layer", "Spatial Dataset ID not mapped through correctly")
+        result_dict = json.loads(result["geolookup_value"])
         self.assertEqual(
-            result["geolookup_value"],
-            '{"features": [{"geometry": {"coordinates": [0.0, 0.0], "type": "Point"}, "properties": {"temp_id": "centre_of_the_world"}, "type": "Feature"}], "type": "FeatureCollection"}',
+            result_dict,
+            {"features": [
+                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                 "properties": {"temp_id": "centre_of_the_world"}, "type": "Feature"}],
+                "type": "FeatureCollection"},
             "Geolookedup value not mapped through correctly"
         )
 
