@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import logging
+from logging.config import dictConfig
 
 import connexion
 from flask import request, has_request_context
@@ -31,10 +32,31 @@ def main():
 
     # Setting up request ID
     RequestID(app.app)
+
+    # Setting up custom logging
+    dictConfig({
+        'version': 1,
+        'formatters': {'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        }},
+        'handlers': {'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'default'
+        }},
+        'root': {
+            'level': 'INFO',
+            'handlers': ['wsgi']
+        }
+    })
+
+    root = logging.getLogger()
     formatter = RequestFormatter(
-        '[%(asctime)s] [%(levelname)s] [%(request_id)s] %(module)s: %(message)s'
+        '[%(asctime)s]-[PID:%(process)d]-[RID:%(request_id)s] %(module)s.%(funcName)s [%(levelname)s]: %(message)s',
+        datefmt="%Y-%m-%dT%H:%M:%S%z"
     )
-    default_handler.setFormatter(formatter)
+    for handler in root.handlers:
+        handler.setFormatter(formatter)
 
     # Running!
     app.run(port=8000, debug=True)
