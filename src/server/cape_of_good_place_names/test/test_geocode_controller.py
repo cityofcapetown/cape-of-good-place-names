@@ -4,11 +4,17 @@ from __future__ import absolute_import
 import base64
 
 from flask import json, current_app
+from geocode_array.Geocoder import Geocoder
 from six import BytesIO
 
 from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geocode_results import GeocodeResults  # noqa: E501
-from cape_of_good_place_names.test import BaseTestCase, MockGeocoder
+from cape_of_good_place_names.test import BaseTestCase
+
+
+class MockGeocoder(Geocoder):
+    def geocode(self, address_string, *extra_args) -> (float, float) or None:
+        return address_string, 0.0, 0.0, None
 
 
 class TestDefaultController(BaseTestCase):
