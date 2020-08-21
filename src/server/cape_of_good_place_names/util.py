@@ -1,6 +1,7 @@
 import datetime
+import functools
 
-from flask import current_app, request, has_request_context
+from flask import current_app, request, has_request_context, json
 import pytz
 import six
 import typing
@@ -154,3 +155,10 @@ def get_request_uuid():
 def get_timestamp():
     tz = pytz.timezone(current_app.config["TIMEZONE"])
     return datetime.datetime.now(tz=tz)
+
+
+@functools.lru_cache(1)
+def get_geocoders():
+    current_app.logger.debug("Getting geocoders...")
+
+    return current_app.config["DEFAULT_GEOCODERS"]

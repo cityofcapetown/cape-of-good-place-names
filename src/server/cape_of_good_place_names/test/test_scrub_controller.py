@@ -17,13 +17,18 @@ class MockScrubber:
         return value + ", niks"
 
 
+class ScrubTestConfig(object):
+    TIMEZONE = "Africa/Johannesburg"
+    SCRUBBERS = [MockScrubber]
+
+
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
-        current_app.config["SCRUBBERS"] = [MockScrubber]
+        current_app.config.from_object(ScrubTestConfig)
 
     def test_scrub(self):
         """Vanilla test case for scrub

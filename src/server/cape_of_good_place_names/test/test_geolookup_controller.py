@@ -12,6 +12,10 @@ from cape_of_good_place_names.models.geolookup_results import GeolookupResults  
 from cape_of_good_place_names.test import BaseTestCase
 
 
+class GeoLookupTestConfig(object):
+    TIMEZONE = "Africa/Johannesburg"
+
+
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
 
@@ -20,8 +24,10 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
         # Setting up the GeoLookup data files
+        tc = GeoLookupTestConfig()
+
         self.temp_dir = tempfile.TemporaryDirectory()
-        current_app.config["GEOLOOKUP_DATASET_DIR"] = self.temp_dir.name
+        tc.GEOLOOKUP_DATASET_DIR = self.temp_dir.name
 
         temp_geojson = {
             "type": "FeatureCollection",
@@ -39,9 +45,10 @@ class TestDefaultController(BaseTestCase):
         with open(temp_layer_file_path, "w") as temp_layer_file:
             json.dump(temp_geojson, temp_layer_file)
 
-        current_app.config["GEOLOOKUP_DATASET_CONFIG"] = {
+        tc.GEOLOOKUP_DATASET_CONFIG = {
             "temp_layer": (temp_layer_file.name, "temp_id")
         }
+        current_app.config.from_object(tc)
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()

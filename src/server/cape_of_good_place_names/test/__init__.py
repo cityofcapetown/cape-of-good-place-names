@@ -14,6 +14,4 @@ class BaseTestCase(TestCase):
         app.app.json_encoder = JSONEncoder
         app.add_api('swagger.yaml')
 
-        app.app.config["TIMEZONE"] = "Africa/Johannesburg"
-
         return app.app

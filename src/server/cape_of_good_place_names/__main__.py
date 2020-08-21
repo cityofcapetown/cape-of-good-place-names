@@ -8,7 +8,7 @@ from flask import request, has_request_context
 from flask.logging import default_handler
 from flask_request_id_header.middleware import RequestID
 
-from cape_of_good_place_names import encoder
+from cape_of_good_place_names import encoder, util
 
 
 class RequestFormatter(logging.Formatter):
@@ -28,7 +28,7 @@ def main():
     app.add_api('swagger.yaml', arguments={'title': 'Cape of Good Place Names Service'}, pythonic_params=True)
 
     # Setting up configuration
-    app.app.config.from_object("cape_of_good_place_names")
+    app.app.config.from_object("cape_of_good_place_names.config.config.Config")
 
     # Setting up request ID
     RequestID(app.app)

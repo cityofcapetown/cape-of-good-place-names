@@ -17,6 +17,11 @@ class MockGeocoder(Geocoder):
         return address_string, 0.0, 0.0, None
 
 
+class GeocoderTestConfig(object):
+    TIMEZONE = "Africa/Johannesburg"
+    DEFAULT_GEOCODERS = [MockGeocoder]
+
+
 class TestDefaultController(BaseTestCase):
     """DefaultController integration test stubs"""
 
@@ -24,7 +29,7 @@ class TestDefaultController(BaseTestCase):
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
-        current_app.config["GEOCODERS"] = [MockGeocoder]
+        current_app.config.from_object(GeocoderTestConfig)
 
     def test_geocode(self):
         """Vanilla test case for geocode

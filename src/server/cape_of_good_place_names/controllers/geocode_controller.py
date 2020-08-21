@@ -28,7 +28,7 @@ def geocode(address):  # noqa: E501
     current_app.logger.debug("address='{}'".format(address))
 
     # Actually doing the geocoding
-    geocoders = [gc() for gc in current_app.config["GEOCODERS"]]
+    geocoders = [gc() for gc in util.get_geocoders()]
     geocoder_results = [
         (
             {
