@@ -5,7 +5,6 @@ from logging.config import dictConfig
 
 import connexion
 from flask import request, has_request_context
-from flask.logging import default_handler
 from flask_request_id_header.middleware import RequestID
 
 from cape_of_good_place_names import encoder, util
@@ -57,6 +56,20 @@ def main():
     )
     for handler in root.handlers:
         handler.setFormatter(formatter)
+
+    # Bootstrapping
+    with app.app.app_context():
+        # Secrets
+        secrets = util.get_secrets()
+        app.app.logger.info(f"Secrets Top-level keys: {', '.join(map(str,secrets.keys()))}")
+
+        # Geocoders
+        geocoders = util.get_geocoders()
+        geocoder_names = (
+            gc.__class__.__name__
+            for gc in geocoders
+        )
+        app.app.logger.info(f"Geocoders: {', '.join(geocoder_names)}")
 
     # Running!
     app.run(port=8000, debug=True)

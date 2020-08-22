@@ -1,5 +1,7 @@
 import datetime
 import functools
+from json.decoder import JSONDecodeError
+import os
 
 from flask import current_app, request, has_request_context, json
 import pytz
@@ -158,7 +160,33 @@ def get_timestamp():
 
 
 @functools.lru_cache(1)
-def get_geocoders():
+def get_geocoders(flush_cache=False):
     current_app.logger.debug("Getting geocoders...")
+    geocoders = [
+        gc()
+        for gc in current_app.config["DEFAULT_GEOCODERS"]
+    ]
 
-    return current_app.config["DEFAULT_GEOCODERS"]
+    return geocoders
+
+
+@functools.lru_cache(1)
+def get_secrets(flush_cache=False):
+    current_app.logger.info("Loading secrets...")
+
+    if "SECRETS_FILE" in current_app.config:
+        secrets_path = current_app.config["SECRETS_FILE"]
+        current_app.logger.debug(f"SECRETS_FILE='{secrets_path}'")
+        if os.path.exists(secrets_path):
+            try:
+                with open(secrets_path) as secrets_file:
+                    return json.load(secrets_file)
+            except JSONDecodeError as e:
+                current_app.logger.error(f"JSON Decode failed! {e.__class__}: {e}")
+        else:
+            current_app.logger.warning(f"'{secrets_path}' does not exist!")
+    else:
+        current_app.logger.warning("'SECRETS_FILE' variable not defined!")
+
+    current_app.logger.warning("No secrets found! Secrets object is empty.")
+    return {}
