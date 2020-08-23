@@ -12,6 +12,8 @@ info:
     url: https://raw.githubusercontent.com/cityofcapetown/cape-of-good-place-names/master/LICENSE
   version: 0.1.0
 servers:
+- url: /
+  description: current host
 - url: http://localhost:8000
   description: local dev server
 - url: https://cogpn-beta.capetown.gov.za

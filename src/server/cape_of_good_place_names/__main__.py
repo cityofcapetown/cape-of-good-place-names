@@ -44,7 +44,7 @@ def main():
             'formatter': 'default'
         }},
         'root': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'handlers': ['wsgi']
         }
     })
@@ -61,7 +61,7 @@ def main():
     with app.app.app_context():
         # Secrets
         secrets = util.get_secrets()
-        app.app.logger.info(f"Secrets Top-level keys: {', '.join(map(str,secrets.keys()))}")
+        app.app.logger.info(f"Secrets' top-level keys: {', '.join(map(str,secrets.keys()))}")
 
         # Secure Mode
         app.app.logger.warning(f"Starting in {'*secure*' if util.secure_mode() else '*insecure*'} mode")
@@ -75,7 +75,7 @@ def main():
         app.app.logger.info(f"Geocoders: {', '.join(geocoder_names)}")
 
     # Running!
-    app.run(port=8000, debug=True)
+    app.run(port=8000, debug=False)
 
 
 if __name__ == '__main__':
