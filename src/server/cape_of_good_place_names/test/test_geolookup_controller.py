@@ -17,6 +17,7 @@ class GeoLookupTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
+    GEOCODERS = []
 
 
 class TestGeoLookupController(BaseTestCase):

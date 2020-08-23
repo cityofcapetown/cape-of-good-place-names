@@ -15,6 +15,7 @@ from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller
 class UtilsTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = []
+    SCRUBBERS = []
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
 
