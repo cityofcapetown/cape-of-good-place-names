@@ -162,6 +162,18 @@ def get_timestamp():
 
 
 @functools.lru_cache(1)
+def secure_mode(flush_cache=False):
+    current_app.logger.debug("Checking auth status...")
+
+    user_secrets_file_exists = os.path.exists(current_app.config["USER_SECRETS_FILE"])
+    user_secrets_salt_exists = current_app.config["USER_SECRETS_SALT_KEY"] in get_secrets()
+
+    current_app.logger.debug(f"user_secrets_file_exists={user_secrets_file_exists} and "
+                             f"user_secrets_salt_exists={user_secrets_salt_exists}")
+    return user_secrets_file_exists and user_secrets_salt_exists
+
+
+@functools.lru_cache(1)
 def get_geocoders(flush_cache=False):
     current_app.logger.debug("Getting geocoders...")
     geocoders = []
@@ -182,7 +194,7 @@ def get_geocoders(flush_cache=False):
                 if lookup_namespace is config.ConfigNamespace.CONFIG:
                     lookup_value = current_app.config
                 else:
-                    lookup_value = get_secrets()
+                    lookup_value = get_secrets() if secure_mode() else {}
 
                 # Traversing the keys
                 skip_flag = False

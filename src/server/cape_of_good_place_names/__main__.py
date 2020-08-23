@@ -63,6 +63,9 @@ def main():
         secrets = util.get_secrets()
         app.app.logger.info(f"Secrets Top-level keys: {', '.join(map(str,secrets.keys()))}")
 
+        # Secure Mode
+        app.app.logger.warning(f"Starting in {'*secure*' if util.secure_mode() else '*insecure*'} mode")
+
         # Geocoders
         geocoders = util.get_geocoders()
         geocoder_names = (

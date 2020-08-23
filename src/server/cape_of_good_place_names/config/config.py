@@ -13,7 +13,12 @@ class Config(object):
     # High level config
     TIMEZONE = "Africa/Johannesburg"
     REQUEST_ID_UNIQUE_VALUE_PREFIX = "cogpn-"
+
+    # Secrets config
     SECRETS_FILE = "/data/secrets/secrets.json"
+
+    USER_SECRETS_SALT_KEY = "cogpn-user-salt"
+    USER_SECRETS_FILE = "/data/secrets/user-secrets.json"
 
     # GeoLookup config
     GEOLOOKUP_DATASET_DIR = "/data/lookup_layers"

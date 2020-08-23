@@ -88,6 +88,8 @@ class TestUtils(BaseTestCase):
             temp_secrets_file.flush()
 
             tc.SECRETS_FILE = temp_secrets_file.name
+            tc.USER_SECRETS_FILE = temp_secrets_file.name  # reusing the temp file
+            tc.USER_SECRETS_SALT_KEY = self.test_secret_key
 
             # Actually configuring the app
             current_app.config.from_object(tc)
@@ -133,6 +135,37 @@ class TestUtils(BaseTestCase):
         self.assertIsNot(secrets, secrets3, "get_secrets cache flush is not happening")
 
         # ToDo test all of the various error paths
+
+    def test_secure_mode(self):
+        """Vanilla test case for secure_mode
+
+        Utility function for determining whether the app should start in secure mode
+        """
+        # Setting up config object
+        tc = UtilsTestConfig()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_secrets_file:
+            json.dump(self.test_secrets, temp_secrets_file)
+            temp_secrets_file.flush()
+
+            tc.SECRETS_FILE = temp_secrets_file.name
+            tc.USER_SECRETS_FILE = temp_secrets_file.name  # reusing the temp file
+            tc.USER_SECRETS_SALT_KEY = self.test_secret_key
+            current_app.config.from_object(tc)
+
+            secure_mode = util.secure_mode()
+
+        self.assertTrue(secure_mode, "Secure mode not correctly detected")
+
+        # The user secrets file shouldn't exist at this point
+        secure_mode2 = util.secure_mode(flush_cache=True)
+        self.assertFalse(secure_mode2, "Secure mode *shouldn't* be detected because the user secrets doesn't exist")
+
+        # Testing that the salt not existing is
+        tc.USER_SECRETS_SALT_KEY = "doesn't-exist"
+        current_app.config.from_object(tc)
+        secure_mode2 = util.secure_mode(flush_cache=False)
+        self.assertFalse(secure_mode2, "Secure mode *shouldn't* be detected because the user secrets salt doesn't exist")
 
 
 if __name__ == '__main__':
