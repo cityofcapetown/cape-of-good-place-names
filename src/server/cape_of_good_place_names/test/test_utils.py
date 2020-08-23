@@ -14,11 +14,10 @@ from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller
 
 class UtilsTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
-    DEFAULT_GEOCODERS = []
-    CONFIGURABLE_GEOCODERS = []
+    GEOCODERS = []
 
 
-class TestDefaultController(BaseTestCase):
+class TestUtils(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
@@ -37,7 +36,9 @@ class TestDefaultController(BaseTestCase):
         """
         # Setting up config object
         tc = UtilsTestConfig()
-        tc.DEFAULT_GEOCODERS = [test_geocode_controller.MockGeocoder]
+        tc.GEOCODERS = (
+            (test_geocode_controller.MockGeocoder, {}),
+        )
         current_app.config.from_object(tc)
 
         # Testing that we get back an instance of the configured geocoder
@@ -63,8 +64,7 @@ class TestDefaultController(BaseTestCase):
 
         random_value = random.random()
         tc.SOME_RANDOM_VALUE = random_value
-        tc.DEFAULT_GEOCODERS = []
-        tc.CONFIGURABLE_GEOCODERS = [
+        tc.GEOCODERS = (
             (
                 test_geocode_controller.MockGeocoder, {
                     "proxy_url": [config.ConfigNamespace.CONFIG, "SOME_RANDOM_VALUE"]
@@ -80,7 +80,7 @@ class TestDefaultController(BaseTestCase):
                     "proxy_url": [config.ConfigNamespace.CONFIG, "SOME_OTHER_RANDOM_VALUE"]
                 }
             )
-        ]
+        )
 
         # Setting secrets values
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_secrets_file:

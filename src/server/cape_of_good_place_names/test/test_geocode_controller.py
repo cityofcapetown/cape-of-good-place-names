@@ -19,8 +19,11 @@ class MockGeocoder(Geocoder):
 
 class GeocoderTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
-    DEFAULT_GEOCODERS = [MockGeocoder]
-    CONFIGURABLE_GEOCODERS = []
+    GEOCODERS = [
+        (
+            MockGeocoder, {}
+        ),
+    ]
 
 
 class TestDefaultController(BaseTestCase):

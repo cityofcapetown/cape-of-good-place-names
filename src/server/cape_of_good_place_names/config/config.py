@@ -22,10 +22,18 @@ class Config(object):
     }
 
     # Geocoder config
-    DEFAULT_GEOCODERS = [Nominatim.Nominatim, CCT.CCT, ArcGIS.ArcGIS, ]
-    CONFIGURABLE_GEOCODERS = (
+    GEOCODERS = (
         # ( Geocoder Class: { keyword arg name: [<namespace>, key1, key2, key3] )
         # namespaces currently supported: secrets, config
+        (
+            Nominatim.Nominatim, {}
+        ),
+        (
+            CCT.CCT, {}
+        ),
+        (
+            ArcGIS.ArcGIS, {}
+        ),
         (
             Google.Google, {"api_key": [ConfigNamespace.SECRETS, "google", "maps-api-key"]}
         ),

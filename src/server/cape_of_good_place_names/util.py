@@ -164,45 +164,43 @@ def get_timestamp():
 @functools.lru_cache(1)
 def get_geocoders(flush_cache=False):
     current_app.logger.debug("Getting geocoders...")
-    default_geocoders = current_app.config["DEFAULT_GEOCODERS"]
-    geocoders = [
-        gc()
-        for gc in default_geocoders
-    ]
+    geocoders = []
 
-    configurable_geocoders = current_app.config["CONFIGURABLE_GEOCODERS"]
-    for gc, gc_params_lookup_dict in configurable_geocoders:
+    geocoders_config = current_app.config["GEOCODERS"]
+    for gc, gc_params_lookup_dict in geocoders_config:
         current_app.logger.debug(f"Attempting to configure '{gc.__name__}'...")
         gc_params = {}
-        skip_flag = True
-        for param, (lookup_namespace, *lookup_path) in gc_params_lookup_dict.items():
-            current_app.logger.debug(f"Setting param '{param}' to '{lookup_namespace}':{'/'.join(lookup_path)}")
-            assert isinstance(lookup_namespace, config.ConfigNamespace), (
-                    f"'{lookup_namespace}' is not a valid config namespace!"
-            )
-            # Setting the root of the lookup path
-            if lookup_namespace is config.ConfigNamespace.CONFIG:
-                lookup_value = current_app.config
-            else:
-                lookup_value = get_secrets()
 
-            # Traversing the keys
-            skip_flag = False
-            for value in lookup_path:
-                if value not in lookup_value:
-                    current_app.logger.error(f"'{value}' ('{'/'.join(lookup_path)}') not present!")
-                    skip_flag = True
+        skip_flag = False
+        if len(gc_params_lookup_dict):
+            for param, (lookup_namespace, *lookup_path) in gc_params_lookup_dict.items():
+                current_app.logger.debug(f"Setting param '{param}' to '{lookup_namespace}':{'/'.join(lookup_path)}")
+                assert isinstance(lookup_namespace, config.ConfigNamespace), (
+                        f"'{lookup_namespace}' is not a valid config namespace!"
+                )
+                # Setting the root of the lookup path
+                if lookup_namespace is config.ConfigNamespace.CONFIG:
+                    lookup_value = current_app.config
+                else:
+                    lookup_value = get_secrets()
+
+                # Traversing the keys
+                skip_flag = False
+                for value in lookup_path:
+                    if value not in lookup_value:
+                        current_app.logger.error(f"'{value}' ('{'/'.join(lookup_path)}') not present!")
+                        skip_flag = True
+                        break
+                    lookup_value = lookup_value[value]
+
+                if skip_flag:
+                    current_app.logger.warning(f"Couldn't set '{param}'!")
                     break
-                lookup_value = lookup_value[value]
 
-            if skip_flag:
-                current_app.logger.warning(f"Couldn't set '{param}'!")
-                break
-
-            current_app.logger.debug(
-                f"Value is {lookup_value if lookup_namespace is not config.ConfigNamespace.SECRETS else '<REDACTED>'}"
-            )
-            gc_params[param] = lookup_value
+                current_app.logger.debug(
+                    f"Value is {lookup_value if lookup_namespace is not config.ConfigNamespace.SECRETS else '<REDACTED>'}"
+                )
+                gc_params[param] = lookup_value
 
         if skip_flag:
             current_app.logger.warning(f"Skipping '{gc.__name__}'!")
