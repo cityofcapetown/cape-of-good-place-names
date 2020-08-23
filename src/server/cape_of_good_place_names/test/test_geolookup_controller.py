@@ -7,12 +7,20 @@ import tempfile
 from flask import json, current_app
 from six import BytesIO
 
+from cape_of_good_place_names import util
 from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geolookup_results import GeolookupResults  # noqa: E501
 from cape_of_good_place_names.test import BaseTestCase
 
 
-class TestDefaultController(BaseTestCase):
+class GeoLookupTestConfig(object):
+    TIMEZONE = "Africa/Johannesburg"
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
+    GEOCODERS = []
+
+
+class TestGeoLookupController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
@@ -20,8 +28,10 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
         # Setting up the GeoLookup data files
+        tc = GeoLookupTestConfig()
+
         self.temp_dir = tempfile.TemporaryDirectory()
-        current_app.config["GEOLOOKUP_DATASET_DIR"] = self.temp_dir.name
+        tc.GEOLOOKUP_DATASET_DIR = self.temp_dir.name
 
         temp_geojson = {
             "type": "FeatureCollection",
@@ -39,9 +49,11 @@ class TestDefaultController(BaseTestCase):
         with open(temp_layer_file_path, "w") as temp_layer_file:
             json.dump(temp_geojson, temp_layer_file)
 
-        current_app.config["GEOLOOKUP_DATASET_CONFIG"] = {
+        tc.GEOLOOKUP_DATASET_CONFIG = {
             "temp_layer": (temp_layer_file.name, "temp_id")
         }
+        current_app.config.from_object(tc)
+        util.flush_caches()
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()

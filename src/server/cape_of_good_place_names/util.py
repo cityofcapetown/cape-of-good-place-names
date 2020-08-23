@@ -1,9 +1,15 @@
 import datetime
+import functools
+import hashlib
+from json.decoder import JSONDecodeError
+import os
 
-from flask import current_app, request, has_request_context
+from flask import current_app, request, has_request_context, json
 import pytz
 import six
 import typing
+
+from cape_of_good_place_names.config import config
 
 
 def _deserialize(data, klass):
@@ -154,3 +160,150 @@ def get_request_uuid():
 def get_timestamp():
     tz = pytz.timezone(current_app.config["TIMEZONE"])
     return datetime.datetime.now(tz=tz)
+
+
+@functools.lru_cache(1)
+def secure_mode(flush_cache=False):
+    current_app.logger.debug("Checking auth status...")
+
+    user_secrets_file_exists = os.path.exists(current_app.config["USER_SECRETS_FILE"])
+    user_secrets_salt_exists = current_app.config["USER_SECRETS_SALT_KEY"] in get_secrets()
+
+    current_app.logger.debug(f"user_secrets_file_exists={user_secrets_file_exists} and "
+                             f"user_secrets_salt_exists={user_secrets_salt_exists}")
+    return user_secrets_file_exists and user_secrets_salt_exists
+
+
+@functools.lru_cache(1)
+def get_geocoders(flush_cache=False):
+    current_app.logger.debug("Getting geocoders...")
+    geocoders = []
+
+    geocoders_config = current_app.config["GEOCODERS"]
+    for gc, gc_params_lookup_dict in geocoders_config:
+        current_app.logger.debug(f"Attempting to configure '{gc.__name__}'...")
+        gc_params = {}
+
+        skip_flag = False
+        if len(gc_params_lookup_dict):
+            for param, (lookup_namespace, *lookup_path) in gc_params_lookup_dict.items():
+                current_app.logger.debug(f"Setting param '{param}' to '{lookup_namespace}':{'/'.join(lookup_path)}")
+                assert isinstance(lookup_namespace, config.ConfigNamespace), (
+                        f"'{lookup_namespace}' is not a valid config namespace!"
+                )
+                # Setting the root of the lookup path
+                if lookup_namespace is config.ConfigNamespace.CONFIG:
+                    lookup_value = current_app.config
+                else:
+                    lookup_value = get_secrets() if secure_mode() else {}
+
+                # Traversing the keys
+                skip_flag = False
+                for value in lookup_path:
+                    if value not in lookup_value:
+                        current_app.logger.error(f"'{value}' ('{'/'.join(lookup_path)}') not present!")
+                        skip_flag = True
+                        break
+                    lookup_value = lookup_value[value]
+
+                if skip_flag:
+                    current_app.logger.warning(f"Couldn't set '{param}'!")
+                    break
+
+                current_app.logger.debug(
+                    f"Value is {lookup_value if lookup_namespace is not config.ConfigNamespace.SECRETS else '<REDACTED>'}"
+                )
+                gc_params[param] = lookup_value
+
+        if skip_flag:
+            current_app.logger.warning(f"Skipping '{gc.__name__}'!")
+            continue
+
+        # Finally, configuring the geocoder with the values that were looked up
+        current_app.logger.debug(f"Configuring '{gc.__name__}' with '{', '.join(map(str, gc_params.keys()))}'")
+        geocoders += [gc(**gc_params)]
+
+    return geocoders
+
+
+@functools.lru_cache(1)
+def get_secrets(flush_cache=False):
+    current_app.logger.info("Loading secrets...")
+
+    if "SECRETS_FILE" in current_app.config:
+        secrets_path = current_app.config["SECRETS_FILE"]
+        current_app.logger.debug(f"SECRETS_FILE='{secrets_path}'")
+        if os.path.exists(secrets_path):
+            try:
+                with open(secrets_path) as secrets_file:
+                    return json.load(secrets_file)
+            except JSONDecodeError as e:
+                current_app.logger.error(f"JSON Decode failed! {e.__class__}: {e}")
+        else:
+            current_app.logger.warning(f"'{secrets_path}' does not exist!")
+    else:
+        current_app.logger.warning("'SECRETS_FILE' variable not defined!")
+
+    current_app.logger.warning("No secrets found! Secrets object is empty.")
+    return {}
+
+
+@functools.lru_cache(1)
+def get_user_secrets(flush_cache=False):
+    current_app.logger.info("Loading user secrets...")
+
+    if secure_mode():
+        secrets_path = current_app.config["USER_SECRETS_FILE"]
+        current_app.logger.debug(f"USER_SECRETS_FILE='{secrets_path}'")
+        if os.path.exists(secrets_path):
+            try:
+                with open(secrets_path) as secrets_file:
+                    return json.load(secrets_file)
+            except JSONDecodeError as e:
+                current_app.logger.error(f"JSON Decode failed! {e.__class__}: {e}")
+        else:
+            current_app.logger.warning(f"'{secrets_path}' does not exist!")
+    else:
+        current_app.logger.warning("Not running in secure mode!")
+
+    current_app.logger.warning("No user secrets found! User Secrets object is empty.")
+    return {}
+
+
+@functools.lru_cache()
+def auth_user(username, password):
+    current_app.logger.info(f"Authing user '{username}'...")
+
+    salt_key = current_app.config["USER_SECRETS_SALT_KEY"]
+    secrets = get_secrets()
+    user_secrets_salt = secrets[salt_key]
+    user_secrets = get_user_secrets()
+
+    # Curried hashing function
+    def user_secret_hash(secret_value):
+        return hashlib.sha256(
+            (secret_value + user_secrets_salt).encode()
+        ).hexdigest()
+
+    hashed_username = user_secret_hash(username)
+    hashed_password = user_secret_hash(password)
+
+    password_lookup = user_secrets.get(hashed_username, None)
+    current_app.logger.warning(f"User '{username}' doesn't exist!") if password_lookup is None else None
+    password_check = password_lookup == hashed_password
+    current_app.logger.warning(f"Password for user '{username}' is {'correct' if password_check else 'incorrect'}")
+
+    return password_check
+
+
+def flush_caches():
+    current_app.logger.info("Flushing caches!")
+    get_secrets(flush_cache=True)
+    get_user_secrets(flush_cache=True)
+    secure_mode(flush_cache=True)
+    get_geocoders(flush_cache=True)
+
+    get_secrets(flush_cache=False)
+    get_user_secrets(flush_cache=False)
+    secure_mode(flush_cache=False)
+    get_geocoders(flush_cache=False)

@@ -1,8 +1,11 @@
+import pprint
+
 import connexion
 from flask import current_app
 import six
 
 from cape_of_good_place_names.models.error import Error  # noqa: E501
+from cape_of_good_place_names.models.scrub_result import ScrubResult  # noqa: E501
 from cape_of_good_place_names.models.scrub_results import ScrubResults  # noqa: E501
 from cape_of_good_place_names import util
 
@@ -17,13 +20,30 @@ def scrub(address):  # noqa: E501
 
     :rtype: ScrubResults
     """
-    request_id = util.get_request_uuid()
     request_timestamp = util.get_timestamp()
+    current_app.logger.info("Scrubb[ing]...")
+    current_app.logger.debug(f"address='{address}'")
+
+    scrubbers = [scrubber() for scrubber in current_app.config["SCRUBBERS"]]
+    scrubbed_values = [
+        scrubber.scrub(address)
+        for scrubber in scrubbers
+    ]
+    current_app.logger.debug(f"scrubbed_values=\n{pprint.pformat(scrubbed_values)}")
+
+    scrub_results = (
+        ScrubResult(
+            scrubber_id=scrubber.__class__.__name__,
+            scrubbed_value=value
+        )
+        for scrubber, value in zip(scrubbers, scrubbed_values)
+    )
 
     response = ScrubResults(
-        id=request_id,
+        id=util.get_request_uuid(),
         timestamp=request_timestamp,
-        results=[]
+        results=list(scrub_results)
     )
+    current_app.logger.info("...Scrubb[ed]!")
 
     return response

@@ -3,20 +3,37 @@
 from __future__ import absolute_import
 import base64
 
-from flask import json
+from flask import json, current_app
 from six import BytesIO
 
-from cape_of_good_place_names.models.error import Error  # noqa: E501
-from cape_of_good_place_names.models.scrub_results import ScrubResults  # noqa: E501
+from cape_of_good_place_names import util
 from cape_of_good_place_names.test import BaseTestCase
 
 
-class TestDefaultController(BaseTestCase):
+class MockScrubber:
+
+    def __init__(self): pass
+
+    def scrub(self, value):
+        return value + ", niks"
+
+
+class ScrubTestConfig(object):
+    TIMEZONE = "Africa/Johannesburg"
+    SCRUBBERS = [MockScrubber]
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
+    GEOCODERS = []
+
+
+class TestScrubController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
+        current_app.config.from_object(ScrubTestConfig)
+        util.flush_caches()
 
     def test_scrub(self):
         """Vanilla test case for scrub
@@ -36,7 +53,17 @@ class TestDefaultController(BaseTestCase):
         # Asserting that we get back the results we expect
         data_dict = json.loads(response.data)
         self.assertIn("results", data_dict)
-        self.assertListEqual(data_dict["results"], [], "Scrubber results list is not empty!")
+        results = data_dict["results"]
+        self.assertEqual(len(results), 1, "Scrubber is not returning the expected number of test results")
+
+        # Inspecting the result itself
+        result, *_ = results
+        self.assertEqual(result["scrubber_id"], MockScrubber.__name__, "Scrubber ID not mapped through correctly")
+        self.assertDictEqual(
+            result,
+            {'scrubbed_value': 'address_example, niks', 'scrubber_id': 'MockScrubber'},
+            "Geocoded value not mapped through correctly"
+        )
 
 
 if __name__ == '__main__':
