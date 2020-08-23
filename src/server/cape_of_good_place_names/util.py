@@ -1,5 +1,6 @@
 import datetime
 import functools
+import hashlib
 from json.decoder import JSONDecodeError
 import os
 
@@ -245,3 +246,64 @@ def get_secrets(flush_cache=False):
 
     current_app.logger.warning("No secrets found! Secrets object is empty.")
     return {}
+
+
+@functools.lru_cache(1)
+def get_user_secrets(flush_cache=False):
+    current_app.logger.info("Loading user secrets...")
+
+    if secure_mode():
+        secrets_path = current_app.config["USER_SECRETS_FILE"]
+        current_app.logger.debug(f"USER_SECRETS_FILE='{secrets_path}'")
+        if os.path.exists(secrets_path):
+            try:
+                with open(secrets_path) as secrets_file:
+                    return json.load(secrets_file)
+            except JSONDecodeError as e:
+                current_app.logger.error(f"JSON Decode failed! {e.__class__}: {e}")
+        else:
+            current_app.logger.warning(f"'{secrets_path}' does not exist!")
+    else:
+        current_app.logger.warning("Not running in secure mode!")
+
+    current_app.logger.warning("No user secrets found! User Secrets object is empty.")
+    return {}
+
+
+@functools.lru_cache()
+def auth_user(username, password):
+    current_app.logger.info(f"Authing user '{username}'...")
+
+    salt_key = current_app.config["USER_SECRETS_SALT_KEY"]
+    secrets = get_secrets()
+    user_secrets_salt = secrets[salt_key]
+    user_secrets = get_user_secrets()
+
+    # Curried hashing function
+    def user_secret_hash(secret_value):
+        return hashlib.sha256(
+            (secret_value + user_secrets_salt).encode()
+        ).hexdigest()
+
+    hashed_username = user_secret_hash(username)
+    hashed_password = user_secret_hash(password)
+
+    password_lookup = user_secrets.get(hashed_username, None)
+    current_app.logger.warning(f"User '{username}' doesn't exist!") if password_lookup is None else None
+    password_check = password_lookup == hashed_password
+    current_app.logger.warning(f"Password for user '{username}' is {'correct' if password_check else 'incorrect'}")
+
+    return password_check
+
+
+def flush_caches():
+    current_app.logger.info("Flushing caches!")
+    get_secrets(flush_cache=True)
+    get_user_secrets(flush_cache=True)
+    secure_mode(flush_cache=True)
+    get_geocoders(flush_cache=True)
+
+    get_secrets(flush_cache=False)
+    get_user_secrets(flush_cache=False)
+    secure_mode(flush_cache=False)
+    get_geocoders(flush_cache=False)

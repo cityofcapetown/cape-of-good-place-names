@@ -15,19 +15,23 @@ from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller
 class UtilsTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = []
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
 
 
 class TestUtils(BaseTestCase):
-    """DefaultController integration test stubs"""
+    """Unit test for utils module"""
 
     def setUp(self) -> None:
-        credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
-        self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
-
         random.seed(1234)
         self.test_secret_key = "Bob"
         self.test_secret_value = "your uncle"
         self.test_secrets = {self.test_secret_key: self.test_secret_value}
+
+        self.test_user_secrets = {
+            '3d224707797b570fe4523f6ff4b9d68be72815d80c19530000919efad9e6cfe2':  # sha256("Bob" + "your uncle")
+                '037525e1e2b6f9f169c483caf4aba43bc50885fdb9a2efe023635cd9534999ab'  # sha256("your uncle" + "your uncle")
+        }
 
     def test_get_geocoders(self):
         """Vanilla test case for get_geocoders
@@ -93,6 +97,7 @@ class TestUtils(BaseTestCase):
 
             # Actually configuring the app
             current_app.config.from_object(tc)
+            util.flush_caches()
 
             # Testing the configuration from config namespace works
             gc, *_ = util.get_geocoders(flush_cache=True)
@@ -152,6 +157,7 @@ class TestUtils(BaseTestCase):
             tc.USER_SECRETS_FILE = temp_secrets_file.name  # reusing the temp file
             tc.USER_SECRETS_SALT_KEY = self.test_secret_key
             current_app.config.from_object(tc)
+            util.flush_caches()
 
             secure_mode = util.secure_mode()
 
@@ -166,6 +172,66 @@ class TestUtils(BaseTestCase):
         current_app.config.from_object(tc)
         secure_mode2 = util.secure_mode(flush_cache=False)
         self.assertFalse(secure_mode2, "Secure mode *shouldn't* be detected because the user secrets salt doesn't exist")
+
+    def test_get_user_secrets(self):
+        """Vanilla test case for get_user_secrets
+
+        Utility function for reading user secrets from configured location
+        """
+        # Setting up config object
+        tc = UtilsTestConfig()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_secrets_file, \
+                tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_user_secrets_file:
+            json.dump(self.test_secrets, temp_secrets_file)
+            json.dump(self.test_user_secrets, temp_user_secrets_file)
+            temp_secrets_file.flush()
+            temp_user_secrets_file.flush()
+
+            tc.SECRETS_FILE = temp_secrets_file.name
+            tc.USER_SECRETS_FILE = temp_user_secrets_file.name  # *not* reusing the temp file
+            tc.USER_SECRETS_SALT_KEY = self.test_secret_key
+            current_app.config.from_object(tc)
+
+            util.get_secrets(flush_cache=True)
+            util.get_user_secrets(flush_cache=True)
+            util.secure_mode(flush_cache=True)
+            user_secrets = util.get_user_secrets()
+
+        self.assertDictEqual(user_secrets, self.test_user_secrets, "User secrets not loaded correctly")
+
+    def test_auth_user(self):
+        """Vanilla test case for auth_user
+
+        Utility function for confirming that user matches what is in the records
+        """
+        # Setting up config object
+        tc = UtilsTestConfig()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_secrets_file, \
+                tempfile.NamedTemporaryFile(mode="w", suffix=".json") as temp_user_secrets_file:
+            json.dump(self.test_secrets, temp_secrets_file)
+            json.dump(self.test_user_secrets, temp_user_secrets_file)
+            temp_secrets_file.flush()
+            temp_user_secrets_file.flush()
+
+            tc.SECRETS_FILE = temp_secrets_file.name
+            tc.USER_SECRETS_FILE = temp_user_secrets_file.name  # *not* reusing the temp file
+            tc.USER_SECRETS_SALT_KEY = self.test_secret_key
+            current_app.config.from_object(tc)
+
+            util.get_secrets(flush_cache=True)
+            util.get_user_secrets(flush_cache=True)
+            util.secure_mode(flush_cache=True)
+            user_auth_check = util.auth_user(self.test_secret_key, self.test_secret_value)
+
+        self.assertTrue(user_auth_check, "User auth not successful")
+
+        user_auth_check2 = util.auth_user(self.test_secret_key, "blah")
+        self.assertFalse(user_auth_check2, "User auth successful despite the password being wrong!")
+
+        user_auth_check3 = util.auth_user("foo", self.test_secret_value)
+        self.assertFalse(user_auth_check2, "User auth successful despite the username being wrong!")
 
 
 if __name__ == '__main__':

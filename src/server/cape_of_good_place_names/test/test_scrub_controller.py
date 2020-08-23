@@ -6,6 +6,7 @@ import base64
 from flask import json, current_app
 from six import BytesIO
 
+from cape_of_good_place_names import util
 from cape_of_good_place_names.test import BaseTestCase
 
 
@@ -20,15 +21,18 @@ class MockScrubber:
 class ScrubTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     SCRUBBERS = [MockScrubber]
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
 
 
-class TestDefaultController(BaseTestCase):
+class TestScrubController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
         current_app.config.from_object(ScrubTestConfig)
+        util.flush_caches()
 
     def test_scrub(self):
         """Vanilla test case for scrub

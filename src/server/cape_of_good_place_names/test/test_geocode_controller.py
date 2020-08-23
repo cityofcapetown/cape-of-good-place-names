@@ -7,6 +7,7 @@ from flask import json, current_app
 from geocode_array.Geocoder import Geocoder
 from six import BytesIO
 
+from cape_of_good_place_names import util
 from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geocode_results import GeocodeResults  # noqa: E501
 from cape_of_good_place_names.test import BaseTestCase
@@ -24,9 +25,11 @@ class GeocoderTestConfig(object):
             MockGeocoder, {}
         ),
     ]
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
 
 
-class TestDefaultController(BaseTestCase):
+class TestGeocodeController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
@@ -34,6 +37,7 @@ class TestDefaultController(BaseTestCase):
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
 
         current_app.config.from_object(GeocoderTestConfig)
+        util.flush_caches()
 
     def test_geocode(self):
         """Vanilla test case for geocode

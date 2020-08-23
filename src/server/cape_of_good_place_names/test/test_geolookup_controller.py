@@ -7,6 +7,7 @@ import tempfile
 from flask import json, current_app
 from six import BytesIO
 
+from cape_of_good_place_names import util
 from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geolookup_results import GeolookupResults  # noqa: E501
 from cape_of_good_place_names.test import BaseTestCase
@@ -14,9 +15,11 @@ from cape_of_good_place_names.test import BaseTestCase
 
 class GeoLookupTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
+    USER_SECRETS_FILE = ""
+    USER_SECRETS_SALT_KEY = ""
 
 
-class TestDefaultController(BaseTestCase):
+class TestGeoLookupController(BaseTestCase):
     """DefaultController integration test stubs"""
 
     def setUp(self) -> None:
@@ -49,6 +52,7 @@ class TestDefaultController(BaseTestCase):
             "temp_layer": (temp_layer_file.name, "temp_id")
         }
         current_app.config.from_object(tc)
+        util.flush_caches()
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
