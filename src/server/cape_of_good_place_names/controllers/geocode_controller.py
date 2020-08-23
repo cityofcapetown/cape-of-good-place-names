@@ -62,7 +62,7 @@ def geocode(address):  # noqa: E501
     )
     current_app.logger.debug("combined_result=\n'{}'".format(pprint.pformat(combined_result)))
 
-    if None not in combined_result[:2]:
+    if combined_result and None not in combined_result[:2]:
         current_app.logger.debug("Adding in combined_result")
         combined_confidence = 1
         combined_confidence -= (
@@ -86,12 +86,14 @@ def geocode(address):  # noqa: E501
                               }]
                           }), combined_confidence)
         ]
+    else:
+        current_app.logger.warning("Combined result not merged in")
 
-        response = GeocodeResults(
-            id=util.get_request_uuid(),
-            timestamp=request_timestamp,
-            results=response_results
-        )
-        current_app.logger.info("...Geocod[ed]".format(address))
+    response = GeocodeResults(
+        id=util.get_request_uuid(),
+        timestamp=request_timestamp,
+        results=response_results
+    )
+    current_app.logger.info("...Geocod[ed]".format(address))
 
     return response
