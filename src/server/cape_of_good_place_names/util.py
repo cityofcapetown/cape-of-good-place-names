@@ -3,6 +3,7 @@ import functools
 import hashlib
 from json.decoder import JSONDecodeError
 import os
+import pprint
 
 from flask import current_app, request, has_request_context, json
 import pytz
@@ -241,6 +242,17 @@ def get_secrets(flush_cache=False):
                 current_app.logger.error(f"JSON Decode failed! {e.__class__}: {e}")
         else:
             current_app.logger.warning(f"'{secrets_path}' does not exist!")
+
+            # Walking the directory structure to the path
+            debug_full_path = os.path.normpath(secrets_path)
+            debug_secrets_path, _ = os.path.split(debug_full_path)
+            debug_secrets_path_components = debug_secrets_path.split(os.sep)
+            for i, _ in enumerate(debug_secrets_path_components):
+                list_path = os.path.join(*map(lambda comp: os.sep + comp, debug_secrets_path_components[:i+1]))
+                if os.path.exists(list_path):
+                    current_app.logger.debug(f"os.listdir('{list_path}')='{pprint.pformat(os.listdir(list_path))}'")
+                else:
+                    current_app.logger.debug(f"'{list_path}' doesn't exist")
     else:
         current_app.logger.warning("'SECRETS_FILE' variable not defined!")
 
