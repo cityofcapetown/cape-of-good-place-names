@@ -58,7 +58,11 @@ def geocode(address):  # noqa: E501
 
     # Merging in a combined result
     combined_result = geocode_array.combine_geocode_results(
-        [(gc.__class__.__name__, *result_tuple) for gc, result_tuple in zip(geocoders, raw_geocoder_results)]
+        [
+            (gc.__class__.__name__, *result_tuple)
+            for gc, result_tuple in zip(geocoders, raw_geocoder_results)
+            if None not in result_tuple[:3]
+        ]
     )
     current_app.logger.debug("combined_result=\n'{}'".format(pprint.pformat(combined_result)))
 

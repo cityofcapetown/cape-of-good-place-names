@@ -24,6 +24,11 @@ class MockGeocoder2(Geocoder):
         return address_string, 0.0001, 0.0001, None
 
 
+class BadMockGeocoder(Geocoder):
+    def geocode(self, address_string, *extra_args) -> (float, float) or None:
+        return address_string, None, "", None
+
+
 class GeocoderTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = [
@@ -135,6 +140,51 @@ class TestGeocodeController(BaseTestCase):
                  "properties": {"geocoders": ["MockGeocoder", "MockGeocoder2"]}, "type": "Feature"}],
                 "type": "FeatureCollection"},
             "Combined geocoded value not mapped through correctly"
+        )
+
+    def test_bad_gecode(self):
+        """Testing the behaviour around failed geocoding AKA SAD CASE TESTS
+
+        """
+        tc = GeocoderTestConfig()
+        tc.GEOCODERS = [
+            (
+                MockGeocoder, {}
+            ),
+            (
+                BadMockGeocoder, {}
+            ),
+        ]
+        current_app.config.from_object(tc)
+        util.flush_caches()
+
+        query_string = [('address', 'address_example')]
+        response = self.client.open(
+            '/v1/geocode',
+            method='GET',
+            query_string=query_string,
+            headers=self.authorisation_headers
+        )
+
+        data_dict = json.loads(response.data)
+        results = data_dict["results"]
+        # For now, the expected behaviour is just to pass through failed geocodes with null values.
+        self.assertEqual(3, len(results), "Geocoder is not returning the expected number of test results")
+
+        _, bad_result, _ = results
+        self.assertEqual(bad_result["confidence"], 0, "Failed geocoder confidence not mapped through correctly")
+        result = json.loads(bad_result["geocoded_value"])
+        self.assertIsNone(result, "Failed geocoder not returning a null result")
+
+        *_, combined_result = results
+        result_dict = json.loads(combined_result["geocoded_value"])
+        self.assertDictEqual(
+            result_dict,
+            {"features": [
+                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                 "properties": {"geocoders": ["MockGeocoder"]}, "type": "Feature"}],
+                "type": "FeatureCollection"},
+            "Combined geocoded value not excluding bad geocoder properly"
         )
 
 
