@@ -7,10 +7,11 @@
 import datetime
 import logging
 import os
+import pprint
 import re
 
 from phdc_scrubber import STREET_TYPES_FILENAME, STREET_NAME_LOOKUP_FILENAME, HERE_PLACE_LOOKUP_FILENAME
-from phdc_scrubber import STREET_NO_REGEX_PATTERN, SQL
+from phdc_scrubber import STREET_NO_REGEX_PATTERN, SQL, POSTCODE_REGEX_PATTERN, MAX_SCORE
 
 
 def _check_data_file_exists(file_path) -> None:
@@ -145,6 +146,15 @@ def get_street_info(address_string_all, street_types_lookup) -> tuple:
     return temp_street_type, temp_street_number, temp_address_string
 
 
+POSTCODE_REGEX = re.compile(POSTCODE_REGEX_PATTERN)
+
+
+def get_postcode(address) -> str or None:
+    found_postcode = POSTCODE_REGEX.search(address)
+
+    return found_postcode.groups()[-1] if found_postcode else None
+
+
 def get_matches(address_words, address_string, address_lookup, postcode=None) -> list:
     """Returns a tuple of match information for an address string against the address lookup dict"""
     # Evaluating matches
@@ -233,6 +243,56 @@ def generate_match_string(match_type, final_tuple, address_row_id, address_id, a
             f'{final_suburb}\t{final_town}\t{str(final_postcode)}\t'
             f'{str(score)}\t'
             f'{final_streetnumber} {final_streetname} {final_suburb} {final_town} {str(final_postcode)}')
+
+
+class PhdcScrubber:
+    def __init__(self, datadir):
+        logging.info("Initialis[ing] PHDC Scrubber...")
+
+        logging.info("Load[ing] Street Types")
+        self.street_types = create_street_types_list(datadir)
+        logging.info("Load[ed] Street Types")
+
+        logging.info("Load[ing] Address Reference")
+        self.address_lookup = create_address_reference(datadir, self.street_types)
+        logging.info("Load[ed] Address Reference")
+
+        logging.info("...Initialis[ed] PHDC Scrubber!")
+
+    def scrub(self, address):
+        logging.debug(f"Scrubbing address '{address}'")
+
+        # Getting street info
+        street_type, street_number, address_string = get_street_info(address, self.street_types)
+        address_words = address_string.split()
+        logging.debug(f"street_type='{street_type}', "
+                      f"street_number='{street_number}', "
+                      f"address_string='{address_string}'")
+
+        # Trying to extract a postal code
+        postcode = get_postcode(address)
+        logging.debug(f"postcode={postcode}")
+
+        matches = get_matches(
+            address_words, address_string, self.address_lookup, postcode
+        )
+        logging.debug(f"Found '{len(matches)}' potential matches in reference dataset")
+
+        match_scores = [
+            (final_tuple, score)
+            for match_type, records, initial_score in matches
+            for score, final_tuple in score_match(initial_score, address_words, records,
+                                                  street_number, street_type, postcode)
+        ]
+
+        logging.debug(f"Final matches: \n{pprint.pformat(match_scores)}")
+
+        new_address_words, final_score = max(match_scores, key=lambda match_tuple: match_tuple[1])
+        new_address = " ".join(new_address_words).strip()
+        confidence = final_score/MAX_SCORE
+        logging.debug(f"new_address='{new_address}', confidence='{confidence}'")
+
+        return new_address, confidence
 
 
 if __name__ == "__main__":
@@ -347,7 +407,7 @@ if __name__ == "__main__":
             # print('as pulled from database, pmi_address_string_all is', pmi_address_string_all)
 
             pmi_street_type, pmi_street_number, pmi_address_string = get_street_info(pmi_address_string_all, street_types)
-            pmi_address_words = map(lambda w: w.upper(), pmi_address_string.split())
+            pmi_address_words = pmi_address_string.split()
 
             pmi_addresses.append(
                 [address_row_id, pmi_id, pmi_street_number, pmi_street_type, pmi_address_string_all, pmi_address_string,

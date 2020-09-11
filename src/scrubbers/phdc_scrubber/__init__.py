@@ -33,3 +33,7 @@ STREET_NO_REGEX_PATTERN = (
     '(\s\d+\s)|'
     '(^\d+ )'
 )
+
+POSTCODE_REGEX_PATTERN = r"^.*\S+.*\b(\d{4}).*$"  # any 4 digit number that has at least something before it in the str
+
+MAX_SCORE = 5
