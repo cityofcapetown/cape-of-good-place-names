@@ -34,14 +34,14 @@ def create_street_types_list(lookup_file_dir) -> list:
     street_types_set = set([])
     with open(street_types_path) as street_types_file:
         for line in street_types_file:
-            street_types_set ^= {
+            street_types_set |= {
                 line.upper().strip()
             }
 
     return list(street_types_set)
 
 
-def create_address_reference(lookup_file_dir) -> dict:
+def create_address_reference(lookup_file_dir, street_types) -> dict:
     """Reads datafiles in lookup_file_dir to create a reference dir"""
     address_lookup_dict = {}
 
@@ -68,6 +68,7 @@ def create_address_reference(lookup_file_dir) -> dict:
 
             if dict_street_type not in street_types and dict_street_type != "" and dict_street_type != " ":
                 street_types.append(dict_street_type)
+
             dict_suburb = line[3]
             dict_suburb = dict_suburb.strip()
             dict_town = line[4]
@@ -107,7 +108,7 @@ def create_address_reference(lookup_file_dir) -> dict:
                 if dict_suburb not in address_lookup_dict:
                     address_lookup_dict[dict_suburb] = []
                 address_lookup_dict[dict_suburb].append(dict_list)
-            if dict_town != '':
+            if dict_town != '' and dict_town != dict_suburb:
                 if dict_town not in address_lookup_dict:
                     address_lookup_dict[dict_town] = []
                 address_lookup_dict[dict_town].append(dict_list)
@@ -124,7 +125,7 @@ def get_street_info(address_string_all, street_types_lookup) -> tuple:
     temp_street_type = ''
     temp_address_string = address_string_all
     for street_type in street_types_lookup:
-        if street_type in address_string_all:
+        if street_type in address_string_all.upper():
             logging.debug(f"'{street_type}' in '{address_string_all}'")
             temp_street_type = street_type
             temp_address_string = address_string_all.replace(street_type, " ")
@@ -149,38 +150,39 @@ def get_matches(address_words, address_string, address_lookup, postcode=None) ->
     # Evaluating matches
     postcode_match = postcode in address_lookup
     suburb_town_match = any([
-        (word in address_lookup)
+        (word.upper() in address_lookup)
         for word in address_words[-4:]
     ])
 
-    # all possible sequential substrings
-    address_substrings_set = set([
-        address_string[i:i+j]
-        for i in range(len(address_string) - 1)
-        for j in range(1, len(address_string))
+    # all possible sequential substrings in the last four words of the string
+    end_of_address_string = address_string[address_string.index(address_words[-4]):]
+    end_of_address_substrings_set = set([
+        address_string[i:i+j].upper()
+        for i in range(len(end_of_address_string) - 1)
+        for j in range(1, len(end_of_address_string))
     ])
-    logging.debug(f"There are '{len(address_substrings_set)}' possible substrings")
+    logging.debug(f"There are '{len(end_of_address_substrings_set)}' possible substrings")
     suburb_town_overlaps = [
-        (word in address_lookup)
-        for word in address_substrings_set
+        (word.upper() in address_lookup)
+        for word in end_of_address_substrings_set
     ]
     logging.debug(f"There are '{sum(suburb_town_overlaps)}' overlaps with the address dict")
 
     address_matches = []  # Expected members (match_type, relevant records from address_dict, initial_score)
     if postcode_match:
         address_matches += [
-            ('postcode_match', address_lookup[pmi_postcode], 2)
+            ('postcode_match', address_lookup[postcode], 2)
         ]
     if suburb_town_match:
         address_matches += [
-            ('suburb_or_town_words_match', address_lookup[word], 1)
-            for word in pmi_address_words[-4:]
-            if word in address_lookup
+            ('suburb_or_town_words_match', address_lookup[word.upper()], 1)
+            for word in address_words[-4:]
+            if word.upper() in address_lookup
         ]
     if any(suburb_town_overlaps):
         address_matches += [
             ('suburb_or_town_string_match', address_lookup[word], 0)
-            for word in address_substrings_set
+            for word in end_of_address_substrings_set
             if word in address_lookup
         ]
     logging.debug(f"There are '{len(address_matches)}' possible matches")
@@ -197,7 +199,7 @@ def score_match(initial_score, address_words, relevant_records, street_number, s
         dict_suburb = dict_record[2]
         dict_town = dict_record[3]
         if dict_streetname in address_words[:3]:
-            logging.debug('\tstreetname match')
+            logging.debug('streetname match')
             final_streetnumber = street_number
             final_streetname = dict_streetname
             final_street_type = street_type
@@ -205,11 +207,13 @@ def score_match(initial_score, address_words, relevant_records, street_number, s
             final_town = dict_town
             final_postcode = postcode_override if postcode_override else ''
             score += 1
-            if final_suburb in address_words[-3:]:
-                logging.debug('\tsuburb match')
-                score += + 1
-            if final_town in address_words[-3:]:
-                logging.debug('\ttown match')
+
+            end_of_address = ' '.join(address_words[-7:])
+            if final_suburb in end_of_address:
+                logging.debug('suburb match')
+                score += 1
+            if final_town in end_of_address:
+                logging.debug('town match')
                 score += 1
 
             yield score, (final_streetnumber, final_streetname, final_street_type,
@@ -310,7 +314,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------
     # create reference dictionaries
 
-    address_dict = create_address_reference(add_dir)
+    address_dict = create_address_reference(add_dir, street_types)
     # _______________________________________________________________________
     # make a list of lists for  all addresses pulled in -
     # connect to mssql server pypyodbc and pull in actual addresses
@@ -343,7 +347,7 @@ if __name__ == "__main__":
             # print('as pulled from database, pmi_address_string_all is', pmi_address_string_all)
 
             pmi_street_type, pmi_street_number, pmi_address_string = get_street_info(pmi_address_string_all, street_types)
-            pmi_address_words = pmi_address_string.split(" ")
+            pmi_address_words = map(lambda w: w.upper(), pmi_address_string.split())
 
             pmi_addresses.append(
                 [address_row_id, pmi_id, pmi_street_number, pmi_street_type, pmi_address_string_all, pmi_address_string,
