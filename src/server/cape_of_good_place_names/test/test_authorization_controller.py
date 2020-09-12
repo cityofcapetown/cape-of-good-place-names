@@ -19,6 +19,7 @@ class AuthorizationTestConfig(object):
     GEOCODERS = []
     GEOCODERS_MIN = 0
     SCRUBBERS = []
+    SCRUBBERS_MIN = 0
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
 

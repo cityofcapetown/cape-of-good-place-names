@@ -238,6 +238,18 @@ def get_geocoders(flush_cache=False):
 
 
 @functools.lru_cache(1)
+def get_scrubbers(flush_cache=False):
+    current_app.logger.debug("Getting scrubbers...")
+
+    scrubber_config = current_app.config["SCRUBBERS"]
+    scrubbers = list(_config_spec_instantiator(scrubber_config))
+
+    assert len(scrubbers) >= current_app.config["SCRUBBERS_MIN"], "Less than the expected number of SCRUBBERS"
+
+    return scrubbers
+
+
+@functools.lru_cache(1)
 def get_secrets(flush_cache=False):
     current_app.logger.info("Loading secrets...")
 
@@ -324,8 +336,10 @@ def flush_caches():
     get_user_secrets(flush_cache=True)
     secure_mode(flush_cache=True)
     get_geocoders(flush_cache=True)
+    get_scrubbers(flush_cache=True)
 
     get_secrets(flush_cache=False)
     get_user_secrets(flush_cache=False)
     secure_mode(flush_cache=False)
     get_geocoders(flush_cache=False)
+    get_scrubbers(flush_cache=False)

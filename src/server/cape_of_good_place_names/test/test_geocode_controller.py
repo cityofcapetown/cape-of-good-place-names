@@ -39,6 +39,8 @@ class GeocoderTestConfig(object):
     GEOCODERS_MIN = 1
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
+    SCRUBBERS = []
+    SCRUBBERS_MIN = 0
 
 
 class TestGeocodeController(BaseTestCase):

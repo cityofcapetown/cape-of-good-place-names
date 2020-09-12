@@ -16,22 +16,6 @@ class BaseTestCase(TestCase):
         app.add_api('swagger.yaml')
 
         # Setting up custom logging
-        dictConfig({
-            'version': 1,
-            'formatters': {'default': {
-                'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-            }},
-            'handlers': {'wsgi': {
-                'class': 'logging.StreamHandler',
-                'stream': 'ext://flask.logging.wsgi_errors_stream',
-                'formatter': 'default'
-            }},
-            'root': {
-                'level': 'DEBUG',
-                'handlers': ['wsgi']
-            }
-        })
-
         root = logging.getLogger()
         formatter = logging.Formatter(
             '[%(asctime)s]-[PID:%(process)d]] %(module)s.%(funcName)s [%(levelname)s]: %(message)s',

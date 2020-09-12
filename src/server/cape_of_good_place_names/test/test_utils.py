@@ -8,7 +8,7 @@ from flask import json, current_app
 
 from cape_of_good_place_names import util
 from cape_of_good_place_names.config import config
-from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller
+from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller, test_scrub_controller
 
 
 class UtilsTestConfig(object):
@@ -16,6 +16,7 @@ class UtilsTestConfig(object):
     GEOCODERS = []
     GEOCODERS_MIN = 0
     SCRUBBERS = []
+    SCRUBBERS_MIN = 0
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
 
@@ -69,9 +70,10 @@ class TestUtils(BaseTestCase):
             util.flush_caches()
 
     def test_configurable_geocoders(self):
-        """Testing get_geocoders sets up a configurable geocoder correctly
+        """Testing get_geocoders sets up a configurable geocoder correctly.
+        This test does double duty, as the config mechanism is shared with get_scrubbers.
 
-        Configurable geocoders are geocoders that need additonal config (e.g. secrets)
+        Configurable geocoders are geocoders that need additional config (e.g. secrets)
         """
         # Setting up config object
         tc = UtilsTestConfig()
@@ -123,6 +125,40 @@ class TestUtils(BaseTestCase):
                              "Configurable geocoder using secrets namespace not being configured correctly")
 
             self.assertEqual(len(util.get_geocoders(flush_cache=True)), 2, "Wrong number of geocoders being returned")
+
+    def test_get_scrubbers(self):
+        """Vanilla test case for get_scrubbers
+
+        Utility function for setting up and configuring scrubber objects
+        """
+        # Setting up config object
+        tc = UtilsTestConfig()
+        tc.SCRUBBERS = (
+            (test_scrub_controller.MockScrubber, {}),
+        )
+        current_app.config.from_object(tc)
+
+        # Testing that we get back an instance of the configured geocoder
+        sc, *_ = util.get_scrubbers()
+        self.assertIsInstance(sc, test_scrub_controller.MockScrubber,
+                              "config is not plumbing through to get_scrubbers correctly")
+
+        # Checking that the cache is working
+        sc2, *_ = util.get_scrubbers()
+        self.assertIs(sc, sc2, "get_scrubbers cache is not working as expected")
+
+        # Flushing the cache and checking we get a new geocoder instance
+        sc3, *_ = util.get_scrubbers(flush_cache=True)
+        self.assertIsNot(sc, sc3, "get_scrubbers cache flush is not happening")
+
+        # Checking that that the min geocoders check works
+        tc = UtilsTestConfig()
+        tc.SCRUBBERS = []
+        tc.SCRUBBERS_MIN = 1
+        current_app.config.from_object(tc)
+
+        with self.assertRaises(AssertionError, msg="get_scrubbers did not raise an assertion error as expected"):
+            util.flush_caches()
 
     def test_get_secrets(self):
         """Vanilla test case for get_secrets

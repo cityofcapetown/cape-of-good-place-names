@@ -15,12 +15,15 @@ class MockScrubber:
     def __init__(self): pass
 
     def scrub(self, value):
-        return value + ", niks"
+        return value + ", niks", 1
 
 
 class ScrubTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
-    SCRUBBERS = [MockScrubber]
+    SCRUBBERS = [
+        (MockScrubber, {})
+    ]
+    SCRUBBERS_MIN = 1
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
     GEOCODERS = []
@@ -62,7 +65,7 @@ class TestScrubController(BaseTestCase):
         self.assertEqual(result["scrubber_id"], MockScrubber.__name__, "Scrubber ID not mapped through correctly")
         self.assertDictEqual(
             result,
-            {'scrubbed_value': 'address_example, niks', 'scrubber_id': 'MockScrubber'},
+            {'scrubbed_value': 'address_example, niks', 'scrubber_id': 'MockScrubber', 'confidence': 1},
             "Geocoded value not mapped through correctly"
         )
 

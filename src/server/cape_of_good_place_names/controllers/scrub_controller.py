@@ -24,7 +24,7 @@ def scrub(address):  # noqa: E501
     current_app.logger.info("Scrubb[ing]...")
     current_app.logger.debug(f"address='{address}'")
 
-    scrubbers = [scrubber() for scrubber in current_app.config["SCRUBBERS"]]
+    scrubbers = util.get_scrubbers()
     scrubbed_values = [
         scrubber.scrub(address)
         for scrubber in scrubbers
@@ -34,9 +34,10 @@ def scrub(address):  # noqa: E501
     scrub_results = (
         ScrubResult(
             scrubber_id=scrubber.__class__.__name__,
-            scrubbed_value=value
+            scrubbed_value=scrubbed_value,
+            confidence=scubber_confidence
         )
-        for scrubber, value in zip(scrubbers, scrubbed_values)
+        for scrubber, (scrubbed_value, scubber_confidence) in zip(scrubbers, scrubbed_values)
     )
 
     response = ScrubResults(

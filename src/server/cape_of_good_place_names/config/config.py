@@ -2,6 +2,7 @@ import enum
 
 from geocode_array import Nominatim, CCT, ArcGIS, Google
 from basic_scrubber import BasicScrubber
+from phdc_scrubber import PhdcScrubber
 
 
 class ConfigNamespace(enum.Enum):
@@ -46,4 +47,15 @@ class Config(object):
     GEOCODERS_MIN = 3
 
     # Scrub config
-    SCRUBBERS = [BasicScrubber.BasicScrubber]
+    SCRUBBER_DATASET_DIR = "/data/scrubber_data"
+    SCRUBBERS = (
+        # ( Scrubber Class: { keyword arg name: [<namespace>, key1, key2, key3] )
+        # namespaces currently supported: secrets, config
+        (
+            BasicScrubber.BasicScrubber, {}
+        ),
+        (
+            PhdcScrubber.PhdcScrubber, {"datadir": [ConfigNamespace.CONFIG, "SCRUBBER_DATASET_DIR"]}
+        ),
+    )
+    SCRUBBERS_MIN = 1

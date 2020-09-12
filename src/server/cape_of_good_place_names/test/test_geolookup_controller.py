@@ -19,7 +19,8 @@ class GeoLookupTestConfig(object):
     USER_SECRETS_SALT_KEY = ""
     GEOCODERS = []
     GEOCODERS_MIN = 0
-
+    SCRUBBERS = []
+    SCRUBBERS_MIN = 0
 
 class TestGeoLookupController(BaseTestCase):
     """DefaultController integration test stubs"""
