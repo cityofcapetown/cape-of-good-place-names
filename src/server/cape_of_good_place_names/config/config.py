@@ -43,6 +43,7 @@ class Config(object):
             Google.Google, {"api_key": [ConfigNamespace.SECRETS, "google", "maps-api-key"]}
         ),
     )
+    GEOCODERS_MIN = 3
 
     # Scrub config
     SCRUBBERS = [BasicScrubber.BasicScrubber]

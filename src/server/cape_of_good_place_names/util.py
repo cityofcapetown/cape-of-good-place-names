@@ -175,22 +175,17 @@ def secure_mode(flush_cache=False):
     return user_secrets_file_exists and user_secrets_salt_exists
 
 
-@functools.lru_cache(1)
-def get_geocoders(flush_cache=False):
-    current_app.logger.debug("Getting geocoders...")
-    geocoders = []
-
-    geocoders_config = current_app.config["GEOCODERS"]
-    for gc, gc_params_lookup_dict in geocoders_config:
-        current_app.logger.debug(f"Attempting to configure '{gc.__name__}'...")
-        gc_params = {}
+def _config_spec_instantiator(config_spec):
+    for klass, klass_params_lookup_dict in config_spec:
+        current_app.logger.debug(f"Attempting to configure '{klass.__name__}'...")
+        klass_params = {}
 
         skip_flag = False
-        if len(gc_params_lookup_dict):
-            for param, (lookup_namespace, *lookup_path) in gc_params_lookup_dict.items():
+        if len(klass_params_lookup_dict):
+            for param, (lookup_namespace, *lookup_path) in klass_params_lookup_dict.items():
                 current_app.logger.debug(f"Setting param '{param}' to '{lookup_namespace}':{'/'.join(lookup_path)}")
                 assert isinstance(lookup_namespace, config.ConfigNamespace), (
-                        f"'{lookup_namespace}' is not a valid config namespace!"
+                    f"'{lookup_namespace}' is not a valid config namespace!"
                 )
                 # Setting the root of the lookup path
                 if lookup_namespace is config.ConfigNamespace.CONFIG:
@@ -214,15 +209,30 @@ def get_geocoders(flush_cache=False):
                 current_app.logger.debug(
                     f"Value is {lookup_value if lookup_namespace is not config.ConfigNamespace.SECRETS else '<REDACTED>'}"
                 )
-                gc_params[param] = lookup_value
+                klass_params[param] = lookup_value
 
         if skip_flag:
-            current_app.logger.warning(f"Skipping '{gc.__name__}'!")
+            current_app.logger.warning(f"Skipping '{klass.__name__}'!")
             continue
 
-        # Finally, configuring the geocoder with the values that were looked up
-        current_app.logger.debug(f"Configuring '{gc.__name__}' with '{', '.join(map(str, gc_params.keys()))}'")
-        geocoders += [gc(**gc_params)]
+        # Finally, configuring the object with the values that were looked up
+        current_app.logger.debug(f"Configuring '{klass.__name__}' with '{', '.join(map(str, klass_params.keys()))}'")
+
+        try:
+            instantiated_obj = klass(**klass_params)
+            yield instantiated_obj
+        except Exception as e:
+            current_app.logger.warning(f"Skipping '{klass.__name__}' because '{e.__class__.__name__}: {e}")
+
+
+@functools.lru_cache(1)
+def get_geocoders(flush_cache=False):
+    current_app.logger.debug("Getting geocoders...")
+
+    geocoders_config = current_app.config["GEOCODERS"]
+    geocoders = list(_config_spec_instantiator(geocoders_config))
+
+    assert len(geocoders) >= current_app.config["GEOCODERS_MIN"], "Less than the expected number of GEOCODERS"
 
     return geocoders
 

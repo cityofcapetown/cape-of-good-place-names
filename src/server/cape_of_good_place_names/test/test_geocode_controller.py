@@ -36,6 +36,7 @@ class GeocoderTestConfig(object):
             MockGeocoder, {}
         ),
     ]
+    GEOCODERS_MIN = 1
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
 

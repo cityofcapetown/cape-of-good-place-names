@@ -14,6 +14,7 @@ from cape_of_good_place_names.test import BaseTestCase, test_geocode_controller
 class UtilsTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = []
+    GEOCODERS_MIN = 0
     SCRUBBERS = []
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
@@ -57,6 +58,15 @@ class TestUtils(BaseTestCase):
         # Flushing the cache and checking we get a new geocoder instance
         gc3, *_ = util.get_geocoders(flush_cache=True)
         self.assertIsNot(gc, gc3, "get_geocoders cache flush is not happening")
+
+        # Checking that that the min geocoders check works
+        tc = UtilsTestConfig()
+        tc.GEOCODERS = []
+        tc.GEOCODERS_MIN = 1
+        current_app.config.from_object(tc)
+
+        with self.assertRaises(AssertionError, msg="get_geocoders did not raise an assertion error as expected"):
+            util.flush_caches()
 
     def test_configurable_geocoders(self):
         """Testing get_geocoders sets up a configurable geocoder correctly
@@ -128,6 +138,7 @@ class TestUtils(BaseTestCase):
 
             tc.SECRETS_FILE = temp_secrets_file.name
             current_app.config.from_object(tc)
+            util.flush_caches()
 
             secrets = util.get_secrets()
             secrets2 = util.get_secrets()
@@ -170,6 +181,7 @@ class TestUtils(BaseTestCase):
         # Testing that the salt not existing is
         tc.USER_SECRETS_SALT_KEY = "doesn't-exist"
         current_app.config.from_object(tc)
+        util.flush_caches()
         secure_mode2 = util.secure_mode(flush_cache=False)
         self.assertFalse(secure_mode2, "Secure mode *shouldn't* be detected because the user secrets salt doesn't exist")
 
@@ -192,6 +204,7 @@ class TestUtils(BaseTestCase):
             tc.USER_SECRETS_FILE = temp_user_secrets_file.name  # *not* reusing the temp file
             tc.USER_SECRETS_SALT_KEY = self.test_secret_key
             current_app.config.from_object(tc)
+            util.flush_caches()
 
             util.get_secrets(flush_cache=True)
             util.get_user_secrets(flush_cache=True)
@@ -219,6 +232,7 @@ class TestUtils(BaseTestCase):
             tc.USER_SECRETS_FILE = temp_user_secrets_file.name  # *not* reusing the temp file
             tc.USER_SECRETS_SALT_KEY = self.test_secret_key
             current_app.config.from_object(tc)
+            util.flush_caches()
 
             util.get_secrets(flush_cache=True)
             util.get_user_secrets(flush_cache=True)

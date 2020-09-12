@@ -18,6 +18,7 @@ class GeoLookupTestConfig(object):
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
     GEOCODERS = []
+    GEOCODERS_MIN = 0
 
 
 class TestGeoLookupController(BaseTestCase):

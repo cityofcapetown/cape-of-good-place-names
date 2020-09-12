@@ -17,6 +17,7 @@ from cape_of_good_place_names.test import BaseTestCase
 class AuthorizationTestConfig(object):
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = []
+    GEOCODERS_MIN = 0
     SCRUBBERS = []
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
