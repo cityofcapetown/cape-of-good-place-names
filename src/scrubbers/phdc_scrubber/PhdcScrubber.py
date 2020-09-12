@@ -287,7 +287,11 @@ class PhdcScrubber:
 
         logging.debug(f"Final matches: \n{pprint.pformat(match_scores)}")
 
-        new_address_words, final_score = max(match_scores, key=lambda match_tuple: match_tuple[1])
+        new_address_words, final_score = (
+            max(match_scores, key=lambda match_tuple: match_tuple[1])
+            if len(match_scores) > 0 else
+            (address_words, 0)
+        )
         new_address = " ".join(new_address_words).strip()
         confidence = final_score/MAX_SCORE
         logging.debug(f"new_address='{new_address}', confidence='{confidence}'")

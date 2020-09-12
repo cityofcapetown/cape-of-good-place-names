@@ -275,8 +275,9 @@ class TestPhdcScrubber(unittest.TestCase):
 
         test_addresses = (
             ("100 10th Ave 1234 Clam Bay Central Dassie Bay Dassie Town", 1, '100 10TH AVE CLAM BAY CENTRAL DASSIE BAY 1234'),
-            ("12 Apple Close Siphoville Siphoville Siphoville Local Municipality", 0.8, '12 APPLE  SIPHOVILLE SIPHOVILLE'),
-            ("Block 56 Tent Street Mouseplek Catenberg Peninsula City", 0.8, '56 TENT ST MOUSEPLEK CATENBERG')
+            ("12 Apple Close Siphoville", 0.8, '12 APPLE  SIPHOVILLE SIPHOVILLE'),
+            ("Block 56 Tent Street Mouseplek Catenberg Peninsula City", 0.8, '56 TENT ST MOUSEPLEK CATENBERG'),
+            ("123 Ernest Drive Siyabulela 5678", 0.0, '123 ERNEST DRIVE SIYABULELA 5678')
         )
 
         # Setting up test data
