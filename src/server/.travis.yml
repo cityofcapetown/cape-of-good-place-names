@@ -9,4 +9,5 @@ install:
   - "pip install -r src/server/requirements.txt"
   - "pip install -r src/server/test-requirements.txt"
 # command to run tests
-script: nosetests src/server
+script:
+  - nosetests src/server
