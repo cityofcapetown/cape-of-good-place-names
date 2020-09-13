@@ -37,7 +37,7 @@ def create_street_types_list(lookup_file_dir) -> list:
         for line in street_types_file:
             street_types_set |= {
                 line.upper().strip()
-            }
+            } if line and line.strip() and len(line) > 0 else set([])
 
     return list(street_types_set)
 
@@ -136,14 +136,19 @@ def get_street_info(address_string_all, street_types_lookup) -> tuple:
 
     # Street Number
     found_numbers = STREET_NO_REGEX.search(temp_address_string)
-    if found_numbers is not None:
-        temp_street_number = found_numbers.group()
-        temp_street_number = temp_street_number.strip()
-        temp_street_number = temp_street_number.strip("NO")
-    else:
-        temp_street_number = ""
+    potential_street_number = found_numbers.group() if found_numbers else None
 
-    return temp_street_type, temp_street_number, temp_address_string
+    logging.debug(f"potential_street_number='{potential_street_number}'")
+
+    if (potential_street_number and
+            # Assume the steet number is in the first half of the string
+            (temp_address_string.index(potential_street_number) < len(temp_address_string)/2)):
+        potential_street_number = potential_street_number.strip()
+        potential_street_number = potential_street_number.strip("NO")
+    else:
+        potential_street_number = ""
+
+    return temp_street_type, potential_street_number, temp_address_string
 
 
 POSTCODE_REGEX = re.compile(POSTCODE_REGEX_PATTERN)
@@ -209,7 +214,7 @@ def score_match(initial_score, address_words, relevant_records, street_number, s
         dict_suburb = dict_record[2]
         dict_town = dict_record[3]
         if dict_streetname in address_words[:3]:
-            logging.debug('streetname match')
+            logging.debug(f'streetname match for "{dict_streetname}"')
             final_streetnumber = street_number
             final_streetname = dict_streetname
             final_street_type = street_type
@@ -220,12 +225,13 @@ def score_match(initial_score, address_words, relevant_records, street_number, s
 
             end_of_address = ' '.join(address_words[-7:])
             if final_suburb in end_of_address:
-                logging.debug('suburb match')
+                logging.debug(f'suburb match for "{final_suburb}"')
                 score += 1
             if final_town in end_of_address:
-                logging.debug('town match')
+                logging.debug(f'town match for "{final_town}"')
                 score += 1
 
+            logging.debug(f"initial_score={initial_score}, final_score={score}")
             yield score, (final_streetnumber, final_streetname, final_street_type,
                           final_suburb, final_town, final_postcode)
 
@@ -276,13 +282,22 @@ class PhdcScrubber:
         matches = get_matches(
             address_words, address_string, self.address_lookup, postcode
         )
+        #logging.debug(f"Possible matches: \n{pprint.pformat(matches)}")
         logging.debug(f"Found '{len(matches)}' potential matches in reference dataset")
+
+        match_type_counts = {}
+        for match_type, records, _ in matches:
+            count = match_type_counts.get(match_type, 0)
+            match_type_counts[match_type] = count + len(records)
+
+        logging.debug(f"Potential Match Counts: \n{pprint.pformat(match_type_counts)}")
 
         match_scores = [
             (final_tuple, score)
             for match_type, records, initial_score in matches
             for score, final_tuple in score_match(initial_score, address_words, records,
-                                                  street_number, street_type, postcode)
+                                                  street_number, street_type,
+                                                  postcode if match_type == "postcode_match" else None)
         ]
 
         logging.debug(f"Final matches: \n{pprint.pformat(match_scores)}")
