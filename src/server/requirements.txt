@@ -5,4 +5,4 @@ pytz == 2020.1
 flask-request-id-header == 0.1.1
 Werkzeug == 0.16.1
 git+git://github.com/opendatadurban/geocode-array.git@b9b91dbe853598b5e48b31512ca34cef80230b1c#egg=geocode-array
-git+git://github.com/cityofcapetown/cape-of-good-place-names@85f2413903ffcbfedf100dd398bce28e645d0067#egg=basic_scrubber&subdirectory=src/scrubbers
+git+git://github.com/cityofcapetown/cape-of-good-place-names@f84d96924eca36c8f8b85aaae1a7312af2cdec8b#egg=cape-of-good-place-names-scrubbers&subdirectory=src/scrubbers
