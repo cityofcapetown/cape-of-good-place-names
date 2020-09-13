@@ -1,13 +1,8 @@
-import collections
-import logging
 import pprint
 
-import connexion
 from flask import current_app, json
 from geocode_array import geocode_array
-import six
 
-from cape_of_good_place_names.models.error import Error  # noqa: E501
 from cape_of_good_place_names.models.geocode_result import GeocodeResult
 from cape_of_good_place_names.models.geocode_results import GeocodeResults  # noqa: E501
 from cape_of_good_place_names import util
@@ -38,7 +33,7 @@ def geocode(address):  # noqa: E501
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [result[1], result[2]]
+                        "coordinates": [result[2], result[1]]  # converting Geocoder (lat, long) -> GeoJSON Point (x, y)
                     },
                     "properties": {
                         "address": result[0]
@@ -82,7 +77,7 @@ def geocode(address):  # noqa: E501
                                   "type": "Feature",
                                   "geometry": {
                                       "type": "Point",
-                                      "coordinates": [combined_result[0], combined_result[1]]
+                                      "coordinates": [combined_result[1], combined_result[0]]
                                   },
                                   "properties": {
                                       "geocoders": combined_result[-1]

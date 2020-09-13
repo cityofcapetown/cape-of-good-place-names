@@ -16,7 +16,7 @@ from cape_of_good_place_names.test import BaseTestCase
 
 class MockGeocoder(Geocoder):
     def geocode(self, address_string, *extra_args) -> (float, float) or None:
-        return address_string, 0, 0, None
+        return address_string, 0.0001, 0.000, None
 
 
 class MockGeocoder2(Geocoder):
@@ -86,11 +86,11 @@ class TestGeocodeController(BaseTestCase):
         self.assertEqual(result["confidence"], 1, "Geocoder confidence not mapped through correctly")
         result_dict = json.loads(result["geocoded_value"])
         self.assertDictEqual(
-            result_dict,
             {"features": [
-                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                {"geometry": {"coordinates": [0.000, 0.0001], "type": "Point"},
                  "properties": {"address": "address_example"}, "type": "Feature"}],
                 "type": "FeatureCollection"},
+            result_dict,
             "Geocoded value not mapped through correctly"
         )
 
@@ -98,12 +98,13 @@ class TestGeocodeController(BaseTestCase):
         *_, result2 = results
         result_dict2 = json.loads(result2["geocoded_value"])
         self.assertDictEqual(
-            result_dict2,
             {"features": [
-                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                {"geometry": {"coordinates": [0.0, 0.0001], "type": "Point"},
                  "properties": {"geocoders": ["MockGeocoder"]}, "type": "Feature"}],
                 "type": "FeatureCollection"},
+            result_dict2,
             "Combined geocoded value not mapped through correctly"
+
         )
 
     def test_combined_gecode(self):
@@ -137,11 +138,11 @@ class TestGeocodeController(BaseTestCase):
         *_, combined_result = results
         result_dict = json.loads(combined_result["geocoded_value"])
         self.assertDictEqual(
-            result_dict,
             {"features": [
-                {"geometry": {"coordinates": [0.00005, 0.00005], "type": "Point"},
+                {"geometry": {"coordinates": [0.00005, 0.0001], "type": "Point"},
                  "properties": {"geocoders": ["MockGeocoder", "MockGeocoder2"]}, "type": "Feature"}],
                 "type": "FeatureCollection"},
+            result_dict,
             "Combined geocoded value not mapped through correctly"
         )
 
@@ -182,11 +183,11 @@ class TestGeocodeController(BaseTestCase):
         *_, combined_result = results
         result_dict = json.loads(combined_result["geocoded_value"])
         self.assertDictEqual(
-            result_dict,
             {"features": [
-                {"geometry": {"coordinates": [0.0, 0.0], "type": "Point"},
+                {"geometry": {"coordinates": [0.0, 0.0001], "type": "Point"},
                  "properties": {"geocoders": ["MockGeocoder"]}, "type": "Feature"}],
                 "type": "FeatureCollection"},
+            result_dict,
             "Combined geocoded value not excluding bad geocoder properly"
         )
 
