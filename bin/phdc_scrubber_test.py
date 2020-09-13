@@ -23,11 +23,10 @@ if __name__ == "__main__":
     datadir = args.datadir
     address = args.address
 
-    logging.debug(f"{PhdcScrubber.STREET_NO_REGEX_PATTERN}")
     scrubber = PhdcScrubber.PhdcScrubber(datadir=datadir)
     scrubbed_address, scrubbed_confidence = scrubber.scrub(address)
 
     logging.info(f"Non-Scrubbed Address: '{address}'")
     logging.info(f"    Scrubbed Address: '{scrubbed_address}'")
-    logging.info(f"          Confidence: '{scrubbed_confidence:.0%}'")
+    logging.info(f"          Confidence: {scrubbed_confidence:.0%}")
 
