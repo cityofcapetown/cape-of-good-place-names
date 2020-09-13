@@ -74,6 +74,14 @@ def main():
         )
         app.app.logger.info(f"Geocoders: {', '.join(geocoder_names)}")
 
+        # Scrubbers
+        scrubbers = util.get_scrubbers()
+        scrubber_names = (
+            sc.__class__.__name__
+            for sc in scrubbers
+        )
+        app.app.logger.info(f"Scrubbers: {', '.join(scrubber_names)}")
+
     # Running!
     app.run(port=8000, debug=False)
 
