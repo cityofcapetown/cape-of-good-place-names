@@ -11,7 +11,7 @@ setup(
     url="",
     keywords=["Cape of Good Place Names Service", "GIS"],
     long_description="""\
-    This is the container package for "scrubbers", modules that attempts to make human description of a place into a 
+    This is the container package for "scrubbers", modules that attempt to make human description of a place into a 
     form more ameanable to translation into a spatial identifier.
     """,
     packages=find_packages(),

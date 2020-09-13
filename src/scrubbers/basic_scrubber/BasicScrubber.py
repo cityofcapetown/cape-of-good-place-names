@@ -2,6 +2,7 @@ import logging
 import re
 
 WHITESPACE_REGEX = re.compile(r'\W+')
+DUNNING_KRUGER_CONFIDENCE = 1
 
 
 class BasicScrubber:
@@ -21,4 +22,4 @@ class BasicScrubber:
 
         logging.debug(f"address after value injection: {new_address}")
 
-        return new_address
+        return new_address, DUNNING_KRUGER_CONFIDENCE
