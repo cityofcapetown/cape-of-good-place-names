@@ -1,6 +1,6 @@
 import enum
 
-from geocode_array import Nominatim, CCT, ArcGIS, Google
+from geocode_array import Nominatim, CCT, ArcGIS, Google, Bing
 from basic_scrubber import BasicScrubber
 from phdc_scrubber import PhdcScrubber
 
@@ -43,6 +43,9 @@ class Config(object):
         (
             Google.Google, {"api_key": [ConfigNamespace.SECRETS, "google", "maps-api-key"]}
         ),
+        (
+            Bing.Bing, {"api_key": [ConfigNamespace.SECRETS, "bing", "api-key"]}
+        )
     )
     GEOCODERS_MIN = 3
 
