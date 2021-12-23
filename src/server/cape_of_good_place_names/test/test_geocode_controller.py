@@ -2,6 +2,8 @@
 
 from __future__ import absolute_import
 import base64
+import os
+import tempfile
 
 from flask import json, current_app
 from geocode_array.Geocoder import Geocoder
@@ -15,8 +17,10 @@ from cape_of_good_place_names.test import BaseTestCase
 
 
 class MockGeocoder(Geocoder):
+    X = 0.0001
+    Y = 0.000
     def geocode(self, address_string, *extra_args) -> (float, float) or None:
-        return address_string, 0.0001, 0.000, None
+        return address_string, self.X, self.Y, None
 
 
 class MockGeocoder2(Geocoder):
@@ -29,13 +33,15 @@ class BadMockGeocoder(Geocoder):
         return address_string, None, "", None
 
 
-class GeocoderTestConfig(object):
+class GeocoderTestConfig:
     TIMEZONE = "Africa/Johannesburg"
     GEOCODERS = [
         (
             MockGeocoder, {}
         ),
     ]
+    GEOCODER_CACHE_DIR = None
+    GEOCODER_CACHE_AGE_THRESHOLD = 1000
     GEOCODERS_MIN = 1
     USER_SECRETS_FILE = ""
     USER_SECRETS_SALT_KEY = ""
@@ -49,6 +55,17 @@ class TestGeocodeController(BaseTestCase):
     def setUp(self) -> None:
         credentials = base64.b64encode(b"test_user:test_password").decode('utf-8')
         self.authorisation_headers = {"Authorization": "Basic {}".format(credentials)}
+
+        # Setting up cache dir
+        self.tempdir = tempfile.TemporaryDirectory()
+        GeocoderTestConfig.GEOCODER_CACHE_DIR = self.tempdir.name
+
+        for gc in [MockGeocoder, MockGeocoder2, BadMockGeocoder]:
+            gc_cache_path = os.path.join(self.tempdir.name, gc.__name__)
+            os.mkdir(gc_cache_path)
+
+    def tearDown(self) -> None:
+        self.tempdir.cleanup()
 
     def test_geocoders(self):
         """Vanilla test case for geocoders
@@ -135,6 +152,62 @@ class TestGeocodeController(BaseTestCase):
             "Combined geocoded value not mapped through correctly"
 
         )
+
+        # Checking that the cache is getting populated
+        for gc, _ in tc.GEOCODERS:
+            cache_path = os.path.join(self.tempdir.name, gc.__name__)
+            cache_files = os.listdir(cache_path)
+            self.assertEqual(len(cache_files), 1, "Cache result file not getting created as expected!")
+
+    def test_geocode_cache(self):
+        """Tests that geocode cache is being used
+
+        """
+        tc = GeocoderTestConfig()
+        tc.GEOCODERS = [
+            (
+                MockGeocoder, {}
+            ),
+        ]
+        current_app.config.from_object(tc)
+        util.flush_caches()
+
+        query_string = [('address', 'address_example')]
+        response = self.client.open(
+            '/v1/geocode',
+            method='GET',
+            query_string=query_string,
+            headers=self.authorisation_headers
+        )
+        data_dict = json.loads(response.data)
+        results = data_dict["results"]
+        result, *_ = results
+        result_dict = json.loads(result["geocoded_value"])
+
+        # Checking that the cache is getting populated
+        for gc, _ in tc.GEOCODERS:
+            cache_path = os.path.join(self.tempdir.name, gc.__name__)
+            cache_files = os.listdir(cache_path)
+            self.assertEqual(len(cache_files), 1, "Cache result file not getting created as expected!")
+
+        geocoder_tuple, *_ = tc.GEOCODERS
+        geocoder_class, _ = geocoder_tuple
+        geocoder_class.X = 5
+        geocoder_class.Y = 10
+
+        response = self.client.open(
+            '/v1/geocode',
+            method='GET',
+            query_string=query_string,
+            headers=self.authorisation_headers
+        )
+        data_dict = json.loads(response.data)
+        results = data_dict["results"]
+        result, *_ = results
+        result_dict2 = json.loads(result["geocoded_value"])
+        self.assertDictEqual(result_dict, result_dict2, "Second read not getting cached value!")
+
+
 
     def test_combined_geocode(self):
         """Testing that combined geocode result is blended into results
