@@ -25,7 +25,7 @@ jobs:
           context: src/server/
           push: true
           tags: |
-              cityofcapetown/cape-of-good-place-names:${GITHUB_REF##*/}
+              cityofcapetown/cape-of-good-place-names:${{ github.ref }}
       -
         name: Build and push latest
         if: github.ref == 'master'
