@@ -16,12 +16,8 @@ jobs:
         uses: actions/checkout@v2
       - name: Extract branch name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "##[set-output name=branch;]$(RAW_BRANCH=${GITHUB_REF#refs/heads/};echo ${RAW_BRANCH//\//_})"
         id: extract_branch
-      - name: Santise branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${steps.extract_branch.outputs.branch//\//_})"
-        id: sanitise_branch
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
@@ -35,7 +31,7 @@ jobs:
           context: src/server/
           push: true
           tags: |
-              cityofcapetown/cape-of-good-place-names:${{ steps.sanitise_branch.outputs.branch }}
+              cityofcapetown/cape-of-good-place-names:${{ steps.extract_branch.outputs.branch }}
       -
         name: Build and push latest
         if: ${{ steps.extract_branch.outputs.branch }} == 'master'
