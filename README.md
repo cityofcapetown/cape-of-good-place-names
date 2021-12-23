@@ -1,11 +1,14 @@
 # cape-of-good-place-names
+
 Service developed as a shared initiative between the Western Cape Provincial and City of Cape Town
 
 ## Getting Started
-The [cogpn-process-address script](bin/cogpn-process-address.py) script provides a minimalist example of using the 
+
+The [cogpn-process-address script](bin/cogpn-process-address.py) script provides a minimalist example of using the
 service in-situ.
 
 script help text:
+
 ```
 usage: cogpn-process-address.py [-h] -a ADDRESS -u USERNAME -p PASSWORD [-x PROXY] [-xu PROXY_USERNAME] [-xp PROXY_PASSWORD] [-s SERVER] [-sc SCRUBBER] [-gc GEOCODER] [-v] [-o OUTPUT]
 
@@ -35,8 +38,9 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Output file (default: /dev/stdout)
 ```
-*NB* Only the `ADDRESS`, `USERNAME` and `PASSWORD` arguments are required.
-e.g.
+
+*NB* Only the `ADDRESS`, `USERNAME` and `PASSWORD` arguments are required. e.g.
+
 ```
 $ python3 bin/cogpn-process-address.py --address "Civic Centre, Hertzog Blvd, Foreshore, Cape Town, 8001" \
                                        --username <REDACTED> \
@@ -49,23 +53,28 @@ $ python3 bin/cogpn-process-address.py --address "Civic Centre, Hertzog Blvd, Fo
 ```
 
 ## Development
-This service is defined using an [OpenAPI](https://swagger.io/specification/) specification, the service's specification
- file is [here](docs/cogpn-spec.yaml).
 
-### Client Code 
+This service is defined using an [OpenAPI](https://swagger.io/specification/) specification, the service's specification
+file is [here](docs/cogpn-spec.yaml).
+
+### Client Code
+
 This means that client code for interacting with the service can be generated from the specification for most languages.
 
 #### Python Client
-A python client has been generated and checked into the source repo [src/clients/python](src/clients/python). It will 
+
+A python client has been generated and checked into the source repo [src/clients/python](src/clients/python). It will
 get updated when/if [the API spec](docs/cogpn-spec.yaml) gets updated.
 
 Installing from this repo:
+
 1. Install the requirements: `pip3 install -r /local/src/clients/python/requirements.txt`
 2. Install the package itself: `python3 install /local/src/clients/python/setup.py`
 
 The [cogpn-process-address script](bin/cogpn-process-address.py) assumes that it has been installed.
 
 #### Implementing the client in a new language
+
 * list the languages available:
     ```bash
     docker run -v ${PWD}:/local openapitools/openapi-generator-cli list
@@ -83,15 +92,16 @@ The [cogpn-process-address script](bin/cogpn-process-address.py) assumes that it
     ```
 
 ### Server Code
+
 The basis for the server implementation is also generated from the specification. This should be done infrequently, as/
 when the API specification changes.
 
 1. Validate the OpenAPI spec using the IBM OpenAPI validator: `lint-openapi docs/cogpn-spec.yaml`
-2. Generate the server implementation in `/src` using Swagger codegen: 
+2. Generate the server implementation in `/src` using Swagger codegen:
     ```bash
-    docker run -v ${PWD}:/local swaggerapi/swagger-codegen-cli-v3 generate -i "/local/docs/cogpn-spec.yaml" \
+    docker run -v ${PWD}:/local openapitools/openapi-generator-cli generate -i "/local/docs/cogpn-spec.yaml" \
                                                                            -c "/local/docs/cogpn-spec-config.json" \
-                                                                           -l "python-flask" \
+                                                                           -g "python-flask" \
                                                                            -o "/local/src/server"
     ```
 3. Fix permission issues: `sudo chown ${USER}:${USER} -R src`

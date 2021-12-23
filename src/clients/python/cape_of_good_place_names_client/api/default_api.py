@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
     Cape of Good Place Names Service
 
@@ -11,18 +9,23 @@
 """
 
 
-from __future__ import absolute_import
-
 import re  # noqa: F401
+import sys  # noqa: F401
 
-# python 2 and python 3 compatibility library
-import six
-
-from cape_of_good_place_names_client.api_client import ApiClient
-from cape_of_good_place_names_client.exceptions import (  # noqa: F401
-    ApiTypeError,
-    ApiValueError
+from cape_of_good_place_names_client.api_client import ApiClient, Endpoint as _Endpoint
+from cape_of_good_place_names_client.model_utils import (  # noqa: F401
+    check_allowed_values,
+    check_validations,
+    date,
+    datetime,
+    file_type,
+    none_type,
+    validate_and_convert_types
 )
+from cape_of_good_place_names_client.model.error import Error
+from cape_of_good_place_names_client.model.geocode_results import GeocodeResults
+from cape_of_good_place_names_client.model.geolookup_results import GeolookupResults
+from cape_of_good_place_names_client.model.scrub_results import ScrubResults
 
 
 class DefaultApi(object):
@@ -36,8 +39,271 @@ class DefaultApi(object):
         if api_client is None:
             api_client = ApiClient()
         self.api_client = api_client
+        self.geocode_endpoint = _Endpoint(
+            settings={
+                'response_type': (GeocodeResults,),
+                'auth': [
+                    'basicAuth'
+                ],
+                'endpoint_path': '/v1.1/geocode',
+                'operation_id': 'geocode',
+                'http_method': 'GET',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                    'address',
+                    'geocoders',
+                ],
+                'required': [
+                    'address',
+                ],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                    'address':
+                        (str,),
+                    'geocoders':
+                        ([str],),
+                },
+                'attribute_map': {
+                    'address': 'address',
+                    'geocoders': 'geocoders',
+                },
+                'location_map': {
+                    'address': 'query',
+                    'geocoders': 'query',
+                },
+                'collection_format_map': {
+                    'geocoders': 'multi',
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [],
+            },
+            api_client=api_client
+        )
+        self.geocode_v1_endpoint = _Endpoint(
+            settings={
+                'response_type': (GeocodeResults,),
+                'auth': [
+                    'basicAuth'
+                ],
+                'endpoint_path': '/v1/geocode',
+                'operation_id': 'geocode_v1',
+                'http_method': 'GET',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                    'address',
+                ],
+                'required': [
+                    'address',
+                ],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                    'address':
+                        (str,),
+                },
+                'attribute_map': {
+                    'address': 'address',
+                },
+                'location_map': {
+                    'address': 'query',
+                },
+                'collection_format_map': {
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [],
+            },
+            api_client=api_client
+        )
+        self.geocoders_endpoint = _Endpoint(
+            settings={
+                'response_type': ([str],),
+                'auth': [
+                    'basicAuth'
+                ],
+                'endpoint_path': '/v1.1/geocoders',
+                'operation_id': 'geocoders',
+                'http_method': 'GET',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                ],
+                'required': [],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                },
+                'attribute_map': {
+                },
+                'location_map': {
+                },
+                'collection_format_map': {
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [],
+            },
+            api_client=api_client
+        )
+        self.geolookup_endpoint = _Endpoint(
+            settings={
+                'response_type': (GeolookupResults,),
+                'auth': [
+                    'basicAuth'
+                ],
+                'endpoint_path': '/v1/boundary_lookup',
+                'operation_id': 'geolookup',
+                'http_method': 'GET',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                    'spatial_dataset_id',
+                    'spatial_id',
+                ],
+                'required': [
+                    'spatial_dataset_id',
+                ],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                    'spatial_dataset_id':
+                        (str,),
+                    'spatial_id':
+                        (str,),
+                },
+                'attribute_map': {
+                    'spatial_dataset_id': 'spatial_dataset_id',
+                    'spatial_id': 'spatial_id',
+                },
+                'location_map': {
+                    'spatial_dataset_id': 'query',
+                    'spatial_id': 'query',
+                },
+                'collection_format_map': {
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [],
+            },
+            api_client=api_client
+        )
+        self.scrub_endpoint = _Endpoint(
+            settings={
+                'response_type': (ScrubResults,),
+                'auth': [
+                    'basicAuth'
+                ],
+                'endpoint_path': '/v1/scrub',
+                'operation_id': 'scrub',
+                'http_method': 'GET',
+                'servers': None,
+            },
+            params_map={
+                'all': [
+                    'address',
+                ],
+                'required': [
+                    'address',
+                ],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
+            },
+            root_map={
+                'validations': {
+                },
+                'allowed_values': {
+                },
+                'openapi_types': {
+                    'address':
+                        (str,),
+                },
+                'attribute_map': {
+                    'address': 'address',
+                },
+                'location_map': {
+                    'address': 'query',
+                },
+                'collection_format_map': {
+                }
+            },
+            headers_map={
+                'accept': [
+                    'application/json'
+                ],
+                'content_type': [],
+            },
+            api_client=api_client
+        )
 
-    def geocode(self, address, **kwargs):  # noqa: E501
+    def geocode(
+        self,
+        address,
+        **kwargs
+    ):
         """Translate a free form address into a spatial coordinate  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -46,127 +312,204 @@ class DefaultApi(object):
         >>> thread = api.geocode(address, async_req=True)
         >>> result = thread.get()
 
-        :param address: Free form address string to geocode (required)
-        :type address: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: GeocodeResults
-        """
-        kwargs['_return_http_data_only'] = True
-        return self.geocode_with_http_info(address, **kwargs)  # noqa: E501
+        Args:
+            address (str): Free form address string to geocode
 
-    def geocode_with_http_info(self, address, **kwargs):  # noqa: E501
+        Keyword Args:
+            geocoders ([str]): ID of Geocoders that should be used. [optional]
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
+
+        Returns:
+            GeocodeResults
+                If the method is called asynchronously, returns the request
+                thread.
+        """
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
+        )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs['address'] = \
+            address
+        return self.geocode_endpoint.call_with_http_info(**kwargs)
+
+    def geocode_v1(
+        self,
+        address,
+        **kwargs
+    ):
         """Translate a free form address into a spatial coordinate  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.geocode_with_http_info(address, async_req=True)
+        >>> thread = api.geocode_v1(address, async_req=True)
         >>> result = thread.get()
 
-        :param address: Free form address string to geocode (required)
-        :type address: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(GeocodeResults, status_code(int), headers(HTTPHeaderDict))
+        Args:
+            address (str): Free form address string to geocode
+
+        Keyword Args:
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
+
+        Returns:
+            GeocodeResults
+                If the method is called asynchronously, returns the request
+                thread.
         """
-
-        local_var_params = locals()
-
-        all_params = [
-            'address'
-        ]
-        all_params.extend(
-            [
-                'async_req',
-                '_return_http_data_only',
-                '_preload_content',
-                '_request_timeout',
-                '_request_auth'
-            ]
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
         )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs['address'] = \
+            address
+        return self.geocode_v1_endpoint.call_with_http_info(**kwargs)
 
-        for key, val in six.iteritems(local_var_params['kwargs']):
-            if key not in all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method geocode" % key
-                )
-            local_var_params[key] = val
-        del local_var_params['kwargs']
-        # verify the required parameter 'address' is set
-        if self.api_client.client_side_validation and ('address' not in local_var_params or  # noqa: E501
-                                                        local_var_params['address'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `address` when calling `geocode`")  # noqa: E501
+    def geocoders(
+        self,
+        **kwargs
+    ):
+        """Return list of supported geocoder IDs  # noqa: E501
 
-        collection_formats = {}
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
 
-        path_params = {}
+        >>> thread = api.geocoders(async_req=True)
+        >>> result = thread.get()
 
-        query_params = []
-        if 'address' in local_var_params and local_var_params['address'] is not None:  # noqa: E501
-            query_params.append(('address', local_var_params['address']))  # noqa: E501
 
-        header_params = {}
+        Keyword Args:
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
 
-        form_params = []
-        local_var_files = {}
+        Returns:
+            [str]
+                If the method is called asynchronously, returns the request
+                thread.
+        """
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
+        )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        return self.geocoders_endpoint.call_with_http_info(**kwargs)
 
-        body_params = None
-        # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
-
-        # Authentication setting
-        auth_settings = ['basicAuth']  # noqa: E501
-
-        return self.api_client.call_api(
-            '/v1/geocode', 'GET',
-            path_params,
-            query_params,
-            header_params,
-            body=body_params,
-            post_params=form_params,
-            files=local_var_files,
-            response_type='GeocodeResults',  # noqa: E501
-            auth_settings=auth_settings,
-            async_req=local_var_params.get('async_req'),
-            _return_http_data_only=local_var_params.get('_return_http_data_only'),  # noqa: E501
-            _preload_content=local_var_params.get('_preload_content', True),
-            _request_timeout=local_var_params.get('_request_timeout'),
-            collection_formats=collection_formats,
-            _request_auth=local_var_params.get('_request_auth'))
-
-    def geolookup(self, spatial_dataset_id, **kwargs):  # noqa: E501
+    def geolookup(
+        self,
+        spatial_dataset_id,
+        **kwargs
+    ):
         """Translate a spatial identifier into a description of space  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -175,134 +518,69 @@ class DefaultApi(object):
         >>> thread = api.geolookup(spatial_dataset_id, async_req=True)
         >>> result = thread.get()
 
-        :param spatial_dataset_id: dataset from which to look up spatial identifier (required)
-        :type spatial_dataset_id: str
-        :param spatial_id: spatial identifier to look up in spatial dataset
-        :type spatial_id: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: GeolookupResults
+        Args:
+            spatial_dataset_id (str): dataset from which to look up spatial identifier
+
+        Keyword Args:
+            spatial_id (str): spatial identifier to look up in spatial dataset. [optional]
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
+
+        Returns:
+            GeolookupResults
+                If the method is called asynchronously, returns the request
+                thread.
         """
-        kwargs['_return_http_data_only'] = True
-        return self.geolookup_with_http_info(spatial_dataset_id, **kwargs)  # noqa: E501
-
-    def geolookup_with_http_info(self, spatial_dataset_id, **kwargs):  # noqa: E501
-        """Translate a spatial identifier into a description of space  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.geolookup_with_http_info(spatial_dataset_id, async_req=True)
-        >>> result = thread.get()
-
-        :param spatial_dataset_id: dataset from which to look up spatial identifier (required)
-        :type spatial_dataset_id: str
-        :param spatial_id: spatial identifier to look up in spatial dataset
-        :type spatial_id: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(GeolookupResults, status_code(int), headers(HTTPHeaderDict))
-        """
-
-        local_var_params = locals()
-
-        all_params = [
-            'spatial_dataset_id',
-            'spatial_id'
-        ]
-        all_params.extend(
-            [
-                'async_req',
-                '_return_http_data_only',
-                '_preload_content',
-                '_request_timeout',
-                '_request_auth'
-            ]
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
         )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs['spatial_dataset_id'] = \
+            spatial_dataset_id
+        return self.geolookup_endpoint.call_with_http_info(**kwargs)
 
-        for key, val in six.iteritems(local_var_params['kwargs']):
-            if key not in all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method geolookup" % key
-                )
-            local_var_params[key] = val
-        del local_var_params['kwargs']
-        # verify the required parameter 'spatial_dataset_id' is set
-        if self.api_client.client_side_validation and ('spatial_dataset_id' not in local_var_params or  # noqa: E501
-                                                        local_var_params['spatial_dataset_id'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `spatial_dataset_id` when calling `geolookup`")  # noqa: E501
-
-        collection_formats = {}
-
-        path_params = {}
-
-        query_params = []
-        if 'spatial_id' in local_var_params and local_var_params['spatial_id'] is not None:  # noqa: E501
-            query_params.append(('spatial_id', local_var_params['spatial_id']))  # noqa: E501
-        if 'spatial_dataset_id' in local_var_params and local_var_params['spatial_dataset_id'] is not None:  # noqa: E501
-            query_params.append(('spatial_dataset_id', local_var_params['spatial_dataset_id']))  # noqa: E501
-
-        header_params = {}
-
-        form_params = []
-        local_var_files = {}
-
-        body_params = None
-        # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
-
-        # Authentication setting
-        auth_settings = ['basicAuth']  # noqa: E501
-
-        return self.api_client.call_api(
-            '/v1/boundary_lookup', 'GET',
-            path_params,
-            query_params,
-            header_params,
-            body=body_params,
-            post_params=form_params,
-            files=local_var_files,
-            response_type='GeolookupResults',  # noqa: E501
-            auth_settings=auth_settings,
-            async_req=local_var_params.get('async_req'),
-            _return_http_data_only=local_var_params.get('_return_http_data_only'),  # noqa: E501
-            _preload_content=local_var_params.get('_preload_content', True),
-            _request_timeout=local_var_params.get('_request_timeout'),
-            collection_formats=collection_formats,
-            _request_auth=local_var_params.get('_request_auth'))
-
-    def scrub(self, address, **kwargs):  # noqa: E501
+    def scrub(
+        self,
+        address,
+        **kwargs
+    ):
         """Extract meaningful phrases or identifiers from free form addresses  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
@@ -311,122 +589,60 @@ class DefaultApi(object):
         >>> thread = api.scrub(address, async_req=True)
         >>> result = thread.get()
 
-        :param address: Free form address string (required)
-        :type address: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: ScrubResults
+        Args:
+            address (str): Free form address string
+
+        Keyword Args:
+            _return_http_data_only (bool): response data without head status
+                code and headers. Default is True.
+            _preload_content (bool): if False, the urllib3.HTTPResponse object
+                will be returned without reading/decoding response data.
+                Default is True.
+            _request_timeout (int/float/tuple): timeout setting for this request. If
+                one number provided, it will be total request timeout. It can also
+                be a pair (tuple) of (connection, read) timeouts.
+                Default is None.
+            _check_input_type (bool): specifies if type checking
+                should be done one the data sent to the server.
+                Default is True.
+            _check_return_type (bool): specifies if type checking
+                should be done one the data received from the server.
+                Default is True.
+            _content_type (str/None): force body content-type.
+                Default is None and content-type will be predicted by allowed
+                content-types and body.
+            _host_index (int/None): specifies the index of the server
+                that we want to use.
+                Default is read from the configuration.
+            async_req (bool): execute request asynchronously
+
+        Returns:
+            ScrubResults
+                If the method is called asynchronously, returns the request
+                thread.
         """
-        kwargs['_return_http_data_only'] = True
-        return self.scrub_with_http_info(address, **kwargs)  # noqa: E501
-
-    def scrub_with_http_info(self, address, **kwargs):  # noqa: E501
-        """Extract meaningful phrases or identifiers from free form addresses  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-
-        >>> thread = api.scrub_with_http_info(address, async_req=True)
-        >>> result = thread.get()
-
-        :param address: Free form address string (required)
-        :type address: str
-        :param async_req: Whether to execute the request asynchronously.
-        :type async_req: bool, optional
-        :param _return_http_data_only: response data without head status code
-                                       and headers
-        :type _return_http_data_only: bool, optional
-        :param _preload_content: if False, the urllib3.HTTPResponse object will
-                                 be returned without reading/decoding response
-                                 data. Default is True.
-        :type _preload_content: bool, optional
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the authentication
-                              in the spec for a single request.
-        :type _request_auth: dict, optional
-        :return: Returns the result object.
-                 If the method is called asynchronously,
-                 returns the request thread.
-        :rtype: tuple(ScrubResults, status_code(int), headers(HTTPHeaderDict))
-        """
-
-        local_var_params = locals()
-
-        all_params = [
-            'address'
-        ]
-        all_params.extend(
-            [
-                'async_req',
-                '_return_http_data_only',
-                '_preload_content',
-                '_request_timeout',
-                '_request_auth'
-            ]
+        kwargs['async_req'] = kwargs.get(
+            'async_req', False
         )
+        kwargs['_return_http_data_only'] = kwargs.get(
+            '_return_http_data_only', True
+        )
+        kwargs['_preload_content'] = kwargs.get(
+            '_preload_content', True
+        )
+        kwargs['_request_timeout'] = kwargs.get(
+            '_request_timeout', None
+        )
+        kwargs['_check_input_type'] = kwargs.get(
+            '_check_input_type', True
+        )
+        kwargs['_check_return_type'] = kwargs.get(
+            '_check_return_type', True
+        )
+        kwargs['_content_type'] = kwargs.get(
+            '_content_type')
+        kwargs['_host_index'] = kwargs.get('_host_index')
+        kwargs['address'] = \
+            address
+        return self.scrub_endpoint.call_with_http_info(**kwargs)
 
-        for key, val in six.iteritems(local_var_params['kwargs']):
-            if key not in all_params:
-                raise ApiTypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method scrub" % key
-                )
-            local_var_params[key] = val
-        del local_var_params['kwargs']
-        # verify the required parameter 'address' is set
-        if self.api_client.client_side_validation and ('address' not in local_var_params or  # noqa: E501
-                                                        local_var_params['address'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `address` when calling `scrub`")  # noqa: E501
-
-        collection_formats = {}
-
-        path_params = {}
-
-        query_params = []
-        if 'address' in local_var_params and local_var_params['address'] is not None:  # noqa: E501
-            query_params.append(('address', local_var_params['address']))  # noqa: E501
-
-        header_params = {}
-
-        form_params = []
-        local_var_files = {}
-
-        body_params = None
-        # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
-
-        # Authentication setting
-        auth_settings = ['basicAuth']  # noqa: E501
-
-        return self.api_client.call_api(
-            '/v1/scrub', 'GET',
-            path_params,
-            query_params,
-            header_params,
-            body=body_params,
-            post_params=form_params,
-            files=local_var_files,
-            response_type='ScrubResults',  # noqa: E501
-            auth_settings=auth_settings,
-            async_req=local_var_params.get('async_req'),
-            _return_http_data_only=local_var_params.get('_return_http_data_only'),  # noqa: E501
-            _preload_content=local_var_params.get('_preload_content', True),
-            _request_timeout=local_var_params.get('_request_timeout'),
-            collection_formats=collection_formats,
-            _request_auth=local_var_params.get('_request_auth'))

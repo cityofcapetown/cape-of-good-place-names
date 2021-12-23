@@ -1,5 +1,3 @@
-# coding: utf-8
-
 # flake8: noqa
 
 """
@@ -13,28 +11,18 @@
 """
 
 
-from __future__ import absolute_import
-
 __version__ = "0.1.0"
-
-# import apis into sdk package
-from cape_of_good_place_names_client.api.default_api import DefaultApi
 
 # import ApiClient
 from cape_of_good_place_names_client.api_client import ApiClient
+
+# import Configuration
 from cape_of_good_place_names_client.configuration import Configuration
+
+# import exceptions
 from cape_of_good_place_names_client.exceptions import OpenApiException
+from cape_of_good_place_names_client.exceptions import ApiAttributeError
 from cape_of_good_place_names_client.exceptions import ApiTypeError
 from cape_of_good_place_names_client.exceptions import ApiValueError
 from cape_of_good_place_names_client.exceptions import ApiKeyError
-from cape_of_good_place_names_client.exceptions import ApiAttributeError
 from cape_of_good_place_names_client.exceptions import ApiException
-# import models into sdk package
-from cape_of_good_place_names_client.models.error import Error
-from cape_of_good_place_names_client.models.geocode_result import GeocodeResult
-from cape_of_good_place_names_client.models.geocode_results import GeocodeResults
-from cape_of_good_place_names_client.models.geolookup_result import GeolookupResult
-from cape_of_good_place_names_client.models.geolookup_results import GeolookupResults
-from cape_of_good_place_names_client.models.scrub_result import ScrubResult
-from cape_of_good_place_names_client.models.scrub_results import ScrubResults
-
