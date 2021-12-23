@@ -1,28 +1,13 @@
 # ref: https://docs.travis-ci.com/user/languages/python
 language: python
-services:
-  - docker
 python:
-  - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"
   - "pip install -r test-requirements.txt"
 # command to run tests
 script: nosetests
-# building docker image
-after_success:
-  - docker --version
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build -t cape-of-good-place-names:$TRAVIS_BUILD_ID
-  - docker tag cape-of-good-place-names:$TRAVIS_BUILD_ID cityofcapetown/cape-of-good-place-names:$TRAVIS_BRANCH
-  - test $TRAVIS_BRANCH = "master" && 
-    docker tag cape-of-good-place-names:$TRAVIS_BUILD_ID cityofcapetown/cape-of-good-place-names:latest
-  - docker image push

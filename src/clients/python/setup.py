@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
     Cape of Good Place Names Service
 
@@ -22,7 +20,10 @@ VERSION = "0.1.0"
 # prerequisite: setuptools
 # http://pypi.python.org/pypi/setuptools
 
-REQUIRES = ["urllib3 >= 1.15", "six >= 1.10", "certifi", "python-dateutil"]
+REQUIRES = [
+  "urllib3 >= 1.25.3",
+  "python-dateutil",
+]
 
 setup(
     name=NAME,
@@ -32,6 +33,7 @@ setup(
     author_email="opmdata+cogpn-support@capetown.gov.za",
     url="",
     keywords=["OpenAPI", "OpenAPI-Generator", "Cape of Good Place Names Service"],
+    python_requires=">=3.6",
     install_requires=REQUIRES,
     packages=find_packages(exclude=["test", "tests"]),
     include_package_data=True,

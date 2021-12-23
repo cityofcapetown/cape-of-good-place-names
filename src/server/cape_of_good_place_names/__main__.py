@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import os
 import logging
 from logging.config import dictConfig
+import pathlib
 
 import connexion
 from flask import request, has_request_context
@@ -68,11 +70,17 @@ def main():
 
         # Geocoders
         geocoders = util.get_geocoders()
-        geocoder_names = (
+        geocoder_names = [
             gc.__class__.__name__
             for gc in geocoders
-        )
+        ]
         app.app.logger.info(f"Geocoders: {', '.join(geocoder_names)}")
+
+        # Setting up GC cache
+        for geocoder in geocoder_names:
+            cache_path = pathlib.Path(app.app.config["GEOCODER_CACHE_DIR"]) / geocoder
+            app.app.logger.info(f"Creating '{cache_path}'")
+            os.makedirs(cache_path, exist_ok=True)
 
         # Scrubbers
         scrubbers = util.get_scrubbers()

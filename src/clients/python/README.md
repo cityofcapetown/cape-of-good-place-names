@@ -10,7 +10,7 @@ For more information, please visit [https://github.com/cityofcapetown/cape-of-go
 
 ## Requirements.
 
-Python 2.7 and 3.4+
+Python >= 3.6
 
 ## Installation & Usage
 ### pip install
@@ -46,13 +46,15 @@ import cape_of_good_place_names_client
 Please follow the [installation procedure](#installation--usage) and then run the following:
 
 ```python
-from __future__ import print_function
 
 import time
 import cape_of_good_place_names_client
-from cape_of_good_place_names_client.rest import ApiException
 from pprint import pprint
-
+from cape_of_good_place_names_client.api import default_api
+from cape_of_good_place_names_client.model.error import Error
+from cape_of_good_place_names_client.model.geocode_results import GeocodeResults
+from cape_of_good_place_names_client.model.geolookup_results import GeolookupResults
+from cape_of_good_place_names_client.model.scrub_results import ScrubResults
 # Defining the host is optional and defaults to http://localhost:8000
 # See configuration.py for a list of all supported configuration parameters.
 configuration = cape_of_good_place_names_client.Configuration(
@@ -74,16 +76,18 @@ configuration = cape_of_good_place_names_client.Configuration(
 # Enter a context with an instance of the API client
 with cape_of_good_place_names_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = cape_of_good_place_names_client.DefaultApi(api_client)
-    address = 'address_example' # str | Free form address string to geocode
+    api_instance = default_api.DefaultApi(api_client)
+    address = "address_example" # str | Free form address string to geocode
+geocoders = [
+        "geocoders_example",
+    ] # [str] | ID of Geocoders that should be used (optional)
 
     try:
         # Translate a free form address into a spatial coordinate
-        api_response = api_instance.geocode(address)
+        api_response = api_instance.geocode(address, geocoders=geocoders)
         pprint(api_response)
-    except ApiException as e:
+    except cape_of_good_place_names_client.ApiException as e:
         print("Exception when calling DefaultApi->geocode: %s\n" % e)
-    
 ```
 
 ## Documentation for API Endpoints
@@ -92,7 +96,9 @@ All URIs are relative to *http://localhost:8000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*DefaultApi* | [**geocode**](docs/DefaultApi.md#geocode) | **GET** /v1/geocode | Translate a free form address into a spatial coordinate
+*DefaultApi* | [**geocode**](docs/DefaultApi.md#geocode) | **GET** /v1.1/geocode | Translate a free form address into a spatial coordinate
+*DefaultApi* | [**geocode_v1**](docs/DefaultApi.md#geocode_v1) | **GET** /v1/geocode | Translate a free form address into a spatial coordinate
+*DefaultApi* | [**geocoders**](docs/DefaultApi.md#geocoders) | **GET** /v1.1/geocoders | Return list of supported geocoder IDs
 *DefaultApi* | [**geolookup**](docs/DefaultApi.md#geolookup) | **GET** /v1/boundary_lookup | Translate a spatial identifier into a description of space
 *DefaultApi* | [**scrub**](docs/DefaultApi.md#scrub) | **GET** /v1/scrub | Extract meaningful phrases or identifiers from free form addresses
 
@@ -120,4 +126,23 @@ Class | Method | HTTP request | Description
 
 opmdata+cogpn-support@capetown.gov.za
 
+
+## Notes for Large OpenAPI documents
+If the OpenAPI document is large, imports in cape_of_good_place_names_client.apis and cape_of_good_place_names_client.models may fail with a
+RecursionError indicating the maximum recursion limit has been exceeded. In that case, there are a couple of solutions:
+
+Solution 1:
+Use specific imports for apis and models like:
+- `from cape_of_good_place_names_client.api.default_api import DefaultApi`
+- `from cape_of_good_place_names_client.model.pet import Pet`
+
+Solution 2:
+Before importing the package, adjust the maximum recursion limit as shown below:
+```
+import sys
+sys.setrecursionlimit(1500)
+import cape_of_good_place_names_client
+from cape_of_good_place_names_client.apis import *
+from cape_of_good_place_names_client.models import *
+```
 

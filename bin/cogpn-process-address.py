@@ -4,6 +4,7 @@ import argparse
 import logging
 
 import cape_of_good_place_names_client as cogpn
+from cape_of_good_place_names_client.api import default_api
 import urllib3
 
 # Config values
@@ -83,7 +84,7 @@ if __name__ == "__main__":
 
     # Setting up the API client - this is inside a context manager that takes cares of underlying IO threads
     with cogpn.ApiClient(configuration=config) as api_client:
-        cogpn_client = cogpn.api.DefaultApi(api_client)
+        cogpn_client = default_api.DefaultApi(api_client)
 
         # Performing the scrub operation
         logging.info("Scrub[ing]...")

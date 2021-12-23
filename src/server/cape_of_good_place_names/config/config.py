@@ -48,6 +48,8 @@ class Config(object):
         )
     )
     GEOCODERS_MIN = 3
+    GEOCODER_CACHE_DIR = "/data/geocoders/cache"
+    GEOCODER_CACHE_AGE_THRESHOLD = 90 * 86400  # 90 days, in seconds
 
     # Scrub config
     SCRUBBER_DATASET_DIR = "/data/scrubber_data"

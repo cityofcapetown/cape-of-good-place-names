@@ -49,7 +49,7 @@ paths:
   /v1/geocode:
     get:
       summary: "Translate a free form address into a spatial coordinate"
-      operationId: geocode
+      operationId: geocode_v1
       parameters: 
        - name: address
          description: "Free form address string to geocode"
@@ -61,6 +61,62 @@ paths:
         '200':
           description: An array of geocoded results
           content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodeResults'
+        '401':
+           $ref: '#/components/responses/UnauthorizedError'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1.1/geocoders:
+    get:
+      summary: "Return list of supported geocoder IDs"
+      operationId: geocoders
+      responses:
+        '200':
+          description: An array of geocoder IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1.1/geocode:
+    get:
+      summary: "Translate a free form address into a spatial coordinate"
+      operationId: geocode
+      parameters:
+       - name: address
+         description: "Free form address string to geocode"
+         in: query
+         required: true
+         schema:
+          type: string
+       - name: geocoders
+         description: "ID of Geocoders that should be used"
+         in: query
+         required: false
+         schema:
+           type: array
+           items:
+             description: "Geocoder ID"
+             type: string
+      responses:
+        '200':
+          description: An array of geocoded results
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeocodeResults'
