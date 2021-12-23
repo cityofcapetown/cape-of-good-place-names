@@ -30,7 +30,7 @@ jobs:
               cityofcapetown/cape-of-good-place-names:${{ steps.extract_ref.outputs.ref }}
       -
         name: Build and push latest
-        if: ${{ steps.extract_branch.outputs.branch }} == 'master'
+        if: ${{ steps.extract_ref.outputs.ref }} == 'master'
         uses: docker/build-push-action@v2
         with:
           context: src/server/
