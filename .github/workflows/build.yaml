@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - '*'
+    tags:
+      - '*'
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -14,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Extract branch name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "##[set-output name=branch;]$(echo ${${GITHUB_REF#refs/heads/}//\//_})"
         id: extract_branch
       -
         name: Login to DockerHub
