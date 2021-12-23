@@ -8,7 +8,34 @@ from cape_of_good_place_names.models.geocode_results import GeocodeResults  # no
 from cape_of_good_place_names import util
 
 
-def geocode(address):  # noqa: E501
+def geocoders():  # noqa: E501
+    """Return list of supported geocoder IDs
+
+     # noqa: E501
+
+
+    :rtype: List[str]
+    """
+    geocoder_names = [geocoder.__class__.__name__ for geocoder in util.get_geocoders()]
+    return geocoder_names
+
+
+def geocode_v1(address):  # noqa: E501
+    """Translate a free form address into a spatial coordinate
+
+     # noqa: E501
+
+    :param address: Free form address string to geocode
+    :type address: str
+    :param geocoders: ID of Geocoders that should be used
+    :type geocoders: List[str]
+
+    :rtype: GeocodeResults
+    """
+    return geocode(address)
+
+
+def geocode(address, geocoders=None):  # noqa: E501
     """Translate a free form address into a spatial coordinate
 
      # noqa: E501
@@ -23,8 +50,12 @@ def geocode(address):  # noqa: E501
     current_app.logger.debug("address='{}'".format(address))
 
     # Actually doing the geocoding
-    geocoders = util.get_geocoders()
-    raw_geocoder_results = [result for result in geocode_array.threaded_geocode(geocoders, address)]
+    geocoder_classes = [
+        geocoder for geocoder in util.get_geocoders()
+        if (geocoders is None) or
+           (geocoders and geocoder.__class__.__name__ in geocoders)
+    ]
+    raw_geocoder_results = [result for result in geocode_array.threaded_geocode(geocoder_classes, address)]
     geocoder_results = [
         (
             {
@@ -48,14 +79,14 @@ def geocode(address):  # noqa: E501
 
     response_results = [
         GeocodeResult(geocoder.__class__.__name__, json.dumps(geocoder_result), 1 if geocoder_result else 0)
-        for geocoder, geocoder_result in zip(geocoders, geocoder_results)
+        for geocoder, geocoder_result in zip(geocoder_classes, geocoder_results)
     ]
 
     # Merging in a combined result
     combined_result = geocode_array.combine_geocode_results(
         [
             (gc.__class__.__name__, *result_tuple)
-            for gc, result_tuple in zip(geocoders, raw_geocoder_results)
+            for gc, result_tuple in zip(geocoder_classes, raw_geocoder_results)
             if None not in result_tuple[:3]
         ]
     )

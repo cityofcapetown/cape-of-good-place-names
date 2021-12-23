@@ -12,30 +12,30 @@ info:
     url: https://raw.githubusercontent.com/cityofcapetown/cape-of-good-place-names/master/LICENSE
   version: 0.1.0
 servers:
-- url: /
-  description: current host
-- url: http://localhost:8000
-  description: local dev server
-- url: https://cogpn-beta.capetown.gov.za
-  description: integration testing server
-- url: https://cogpn.capetown.gov.za
-  description: prod server
+  - url: /
+    description: current host
+  - url: http://localhost:8000
+    description: local dev server
+  - url: https://cogpn-beta.capetown.gov.za
+    description: integration testing server
+  - url: https://cogpn.capetown.gov.za
+    description: prod server
 security:
-- basicAuth: []
+  - basicAuth: [ ]
 paths:
   /v1/scrub:
     get:
       summary: Extract meaningful phrases or identifiers from free form addresses
       operationId: scrub
       parameters:
-      - name: address
-        in: query
-        description: Free form address string
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
+        - name: address
+          in: query
+          description: Free form address string
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
       responses:
         "200":
           description: An array of scrubbed results
@@ -61,16 +61,91 @@ paths:
   /v1/geocode:
     get:
       summary: Translate a free form address into a spatial coordinate
+      operationId: geocode_v1
+      parameters:
+        - name: address
+          in: query
+          description: Free form address string to geocode
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: An array of geocoded results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodeResults'
+        "401":
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-openapi-router-controller: cape_of_good_place_names.controllers.geocode_controller
+  /v1.1/geocoders:
+    get:
+      summary: Return list of supported geocoder IDs
+      operationId: geocoders
+      responses:
+        "200":
+          description: An array of geocoder IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                x-content-type: application/json
+        "401":
+          description: Authentication information is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-openapi-router-controller: cape_of_good_place_names.controllers.geocode_controller
+  /v1.1/geocode:
+    get:
+      summary: Translate a free form address into a spatial coordinate
       operationId: geocode
       parameters:
-      - name: address
-        in: query
-        description: Free form address string to geocode
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
+        - name: address
+          in: query
+          description: Free form address string to geocode
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: geocoders
+          in: query
+          description: ID of Geocoders that should be used
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              description: Geocoder ID
       responses:
         "200":
           description: An array of geocoded results
@@ -98,22 +173,22 @@ paths:
       summary: Translate a spatial identifier into a description of space
       operationId: geolookup
       parameters:
-      - name: spatial_id
-        in: query
-        description: spatial identifier to look up in spatial dataset
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-      - name: spatial_dataset_id
-        in: query
-        description: dataset from which to look up spatial identifier
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
+        - name: spatial_id
+          in: query
+          description: spatial identifier to look up in spatial dataset
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: spatial_dataset_id
+          in: query
+          description: dataset from which to look up spatial identifier
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
       responses:
         "200":
           description: An array of geolookup results
@@ -146,9 +221,9 @@ components:
   schemas:
     ScrubResult:
       required:
-      - confidence
-      - scrubbed_value
-      - scrubber_id
+        - confidence
+        - scrubbed_value
+        - scrubber_id
       type: object
       properties:
         scrubber_id:
@@ -165,9 +240,9 @@ components:
         scrubbed_value: scrubbed_value
     ScrubResults:
       required:
-      - id
-      - results
-      - timestamp
+        - id
+        - results
+        - timestamp
       type: object
       properties:
         id:
@@ -185,18 +260,18 @@ components:
       example:
         id: id
         results:
-        - scrubber_id: scrubber_id
-          confidence: 0.8008282
-          scrubbed_value: scrubbed_value
-        - scrubber_id: scrubber_id
-          confidence: 0.8008282
-          scrubbed_value: scrubbed_value
+          - scrubber_id: scrubber_id
+            confidence: 0.8008282
+            scrubbed_value: scrubbed_value
+          - scrubber_id: scrubber_id
+            confidence: 0.8008282
+            scrubbed_value: scrubbed_value
         timestamp: 2000-01-23T04:56:07.000+00:00
     GeocodeResult:
       required:
-      - confidence
-      - geocoded_value
-      - geocoder_id
+        - confidence
+        - geocoded_value
+        - geocoder_id
       type: object
       properties:
         geocoder_id:
@@ -211,12 +286,12 @@ components:
       example:
         confidence: 0.8008282
         geocoder_id: geocoder_id
-        geocoded_value: {}
+        geocoded_value: { }
     GeocodeResults:
       required:
-      - id
-      - results
-      - timestamp
+        - id
+        - results
+        - timestamp
       type: object
       properties:
         id:
@@ -234,17 +309,17 @@ components:
       example:
         id: id
         results:
-        - confidence: 0.8008282
-          geocoder_id: geocoder_id
-          geocoded_value: {}
-        - confidence: 0.8008282
-          geocoder_id: geocoder_id
-          geocoded_value: {}
+          - confidence: 0.8008282
+            geocoder_id: geocoder_id
+            geocoded_value: { }
+          - confidence: 0.8008282
+            geocoder_id: geocoder_id
+            geocoded_value: { }
         timestamp: 2000-01-23T04:56:07.000+00:00
     GeolookupResult:
       required:
-      - geolookup_id
-      - geolookup_value
+        - geolookup_id
+        - geolookup_value
       type: object
       properties:
         geolookup_id:
@@ -255,12 +330,12 @@ components:
           description: Resulting GeoJSON string from the lookup
       example:
         geolookup_id: geolookup_id
-        geolookup_value: {}
+        geolookup_value: { }
     GeolookupResults:
       required:
-      - id
-      - results
-      - timestamp
+        - id
+        - results
+        - timestamp
       type: object
       properties:
         id:
@@ -278,15 +353,15 @@ components:
       example:
         id: id
         results:
-        - geolookup_id: geolookup_id
-          geolookup_value: {}
-        - geolookup_id: geolookup_id
-          geolookup_value: {}
+          - geolookup_id: geolookup_id
+            geolookup_value: { }
+          - geolookup_id: geolookup_id
+            geolookup_value: { }
         timestamp: 2000-01-23T04:56:07.000+00:00
     Error:
       required:
-      - code
-      - message
+        - code
+        - message
       type: object
       properties:
         code:
