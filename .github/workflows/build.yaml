@@ -3,10 +3,6 @@ name: docker_build_server
 on:
   workflow_dispatch:
   push:
-    branches:
-      - '*'
-    tags:
-      - '*'
 jobs:
   docker:
     runs-on: ubuntu-latest
