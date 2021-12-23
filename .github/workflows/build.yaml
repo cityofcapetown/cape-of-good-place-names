@@ -7,33 +7,43 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
+      # tests
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install test dependencies
+        shell: bash
+        run: pip install -r src/server/requirements.txt && pip install -r src/server/test-requirements.txt
+        id: install_deps
+      - name: Run tests
+        shell: bash
+        run: nosetests src/server
+        id: run_tests
+      # docker image build
       - name: Extract branch or tag name
         shell: bash
         run: echo "##[set-output name=ref;]$(RAW_REF=${GITHUB_REF#refs/*/};echo ${RAW_REF//\//_})"
         id: extract_ref
-      -
-        name: Login to DockerHub
+      - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+      - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: src/server/
           push: true
           tags: |
-              cityofcapetown/cape-of-good-place-names:${{ steps.extract_ref.outputs.ref }}
-      -
-        name: Build and push latest
+            cityofcapetown/cape-of-good-place-names:${{ steps.extract_ref.outputs.ref }}
+      - name: Build and push latest
         if: ${{ steps.extract_ref.outputs.ref == 'master' }}
         uses: docker/build-push-action@v2
         with:
           context: src/server/
           push: true
           tags: |
-              cityofcapetown/cape-of-good-place-names:latest
+            cityofcapetown/cape-of-good-place-names:latest
