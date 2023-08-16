@@ -8,3 +8,4 @@ flask-request-id-header == 0.1.1
 Werkzeug == 0.16.1
 git+https://github.com/opendatadurban/geocode-array@55c47d2f240c0f07c8b94978c7b39564ec9e0ffe#egg=geocode-array
 git+https://github.com/cityofcapetown/cape-of-good-place-names@f84d96924eca36c8f8b85aaae1a7312af2cdec8b#egg=cape-of-good-place-names-scrubbers&subdirectory=src/scrubbers
+markupsafe==2.0.1
